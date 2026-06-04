@@ -212,6 +212,7 @@ function TradePageInner() {
       loadQuotes();
       loadLimits(selected);
       setAmountUsd("");
+      window.dispatchEvent(new Event("auxano:trade-complete"));
     }
   }
 

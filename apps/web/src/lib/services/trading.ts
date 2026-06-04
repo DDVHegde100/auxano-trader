@@ -8,6 +8,7 @@ import {
 } from "@auxano/shared";
 import { recordPortfolioSnapshot } from "./portfolio";
 import { getOrFetchQuote } from "./market";
+import { refreshLeaderboardQuotes } from "./leaderboard";
 import { assertCanBuySymbol } from "./strategy-trade";
 
 export async function executePaperTrade(params: {
@@ -148,5 +149,7 @@ export async function executePaperTrade(params: {
 
   await recordPortfolioSnapshot(account.id);
 
-  return { orderId: order.id, price, realizedPnl };
+  refreshLeaderboardQuotes().catch(() => {});
+
+  return { orderId: order.id, price, realizedPnl, leaderboardRefresh: true };
 }

@@ -1,8 +1,49 @@
 import { prisma } from "@auxano/database";
 import { decimalToNumber } from "@auxano/shared";
+import { getOrFetchQuote, refreshLiveQuotes } from "./market";
 
-export async function getLeaderboards() {
-  const [topStrategies, topCreators, topTraders] = await Promise.all([
+import type { LeaderboardPayload, LeaderboardTrader } from "@/lib/types/leaderboard";
+
+export type { LeaderboardPayload, LeaderboardTrader };
+
+async function collectLeaderboardSymbols(): Promise<string[]> {
+  const positions = await prisma.position.findMany({
+    select: { symbol: true },
+    distinct: ["symbol"],
+  });
+  const watchItems = await prisma.watchlistItem.findMany({
+    select: { symbol: true },
+    distinct: ["symbol"],
+  });
+  const set = new Set<string>();
+  for (const p of positions) set.add(p.symbol);
+  for (const w of watchItems) set.add(w.symbol);
+  set.add("SPY");
+  return [...set];
+}
+
+/** Refresh live prices for symbols that affect portfolio rankings. */
+export async function refreshLeaderboardQuotes(): Promise<void> {
+  const symbols = await collectLeaderboardSymbols();
+  await Promise.all(symbols.map((s) => getOrFetchQuote(s)));
+  await refreshLiveQuotes();
+}
+
+function buildQuoteMap(
+  quotes: { symbol: string; price: { toString(): string } }[]
+): Map<string, number> {
+  return new Map(quotes.map((q) => [q.symbol, decimalToNumber(q.price)]));
+}
+
+export async function getLeaderboards(options?: {
+  refresh?: boolean;
+  viewerId?: string;
+}): Promise<LeaderboardPayload> {
+  if (options?.refresh) {
+    await refreshLeaderboardQuotes();
+  }
+
+  const [topStrategies, topCreators, accounts, quotes] = await Promise.all([
     prisma.strategy.findMany({
       where: { isPublished: true },
       orderBy: { quantScore: "desc" },
@@ -19,16 +60,26 @@ export async function getLeaderboards() {
           select: { quantScore: true, followerCount: true },
         },
       },
-      take: 20,
+      take: 50,
     }),
     prisma.paperAccount.findMany({
       include: {
-        user: { select: { id: true, name: true, username: true, avatarUrl: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatarUrl: true,
+            isProfilePublic: true,
+          },
+        },
         positions: true,
       },
-      take: 20,
     }),
+    prisma.marketQuote.findMany(),
   ]);
+
+  const quoteMap = buildQuoteMap(quotes);
 
   const creators = topCreators
     .map((u) => ({
@@ -42,14 +93,15 @@ export async function getLeaderboards() {
     }))
     .filter((c) => c.strategyCount > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 10);
+    .slice(0, 10)
+    .map((c, i) => ({ ...c, rank: i + 1 }));
 
-  const quotes = await prisma.marketQuote.findMany();
-  const quoteMap = new Map(
-    quotes.map((q) => [q.symbol, decimalToNumber(q.price)])
-  );
+  const viewerId = options?.viewerId;
+  const acceptedFriendIds = viewerId
+    ? await getAcceptedFriendIds(viewerId)
+    : new Set<string>();
 
-  const traders = topTraders
+  const tradersRaw = accounts
     .map((acc) => {
       const cash = decimalToNumber(acc.cashBalance);
       const initial = decimalToNumber(acc.initialBalance);
@@ -64,12 +116,27 @@ export async function getLeaderboards() {
         user: acc.user,
         portfolioValue: total,
         returnPct,
+        cashBalance: cash,
+        positionsValue: posVal,
       };
+    })
+    .filter((t) => {
+      if (!t.user.username) return false;
+      if (t.user.isProfilePublic) return true;
+      if (!viewerId) return false;
+      if (t.user.id === viewerId) return true;
+      return acceptedFriendIds.has(t.user.id);
     })
     .sort((a, b) => b.returnPct - a.returnPct)
     .slice(0, 10);
 
+  const topTraders: LeaderboardTrader[] = tradersRaw.map((t, i) => ({
+    ...t,
+    rank: i + 1,
+  }));
+
   return {
+    refreshedAt: new Date().toISOString(),
     topStrategies: topStrategies.map((s) => ({
       id: s.id,
       name: s.name,
@@ -81,6 +148,21 @@ export async function getLeaderboards() {
         : 0,
     })),
     topCreators: creators,
-    topTraders: traders,
+    topTraders,
   };
+}
+
+async function getAcceptedFriendIds(userId: string): Promise<Set<string>> {
+  const rows = await prisma.userFollow.findMany({
+    where: {
+      status: "ACCEPTED",
+      OR: [{ followerId: userId }, { followingId: userId }],
+    },
+    select: { followerId: true, followingId: true },
+  });
+  const ids = new Set<string>();
+  for (const r of rows) {
+    ids.add(r.followerId === userId ? r.followingId : r.followerId);
+  }
+  return ids;
 }
