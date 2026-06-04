@@ -20,6 +20,9 @@ const isPublicRoute = createRouteMatcher([
   "/api/algorithms/presets/(.*)",
   "/api/auth/dev-login",
   "/api/webhooks/clerk",
+  "/u/(.*)",
+  "/share/(.*)",
+  "/api/share/(.*)",
 ]);
 
 const clerkHandler = clerkMiddleware(async (auth, req) => {

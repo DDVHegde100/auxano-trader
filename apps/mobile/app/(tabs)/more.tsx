@@ -19,6 +19,7 @@ import { theme } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { formatPct, formatUsd } from "@/src/lib/format";
 import { PRESET_ALGORITHMS } from "@auxano/shared";
+import { ShareSheet } from "@/src/components/ShareSheet";
 
 const SYMBOLS = ["AAPL", "NVDA", "MSFT", "TSLA", "GOOGL"];
 
@@ -38,9 +39,22 @@ export default function MoreScreen() {
     equityCurve: { date: string; value: number }[];
   } | null>(null);
   const [showBt, setShowBt] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     apiFetch<typeof leaders>("/api/leaderboard").then(setLeaders);
+    (async () => {
+      try {
+        const token = await getToken();
+        const profile = await apiFetch<{ user?: { username?: string } }>(
+          "/api/user/profile",
+          { token: token ?? undefined }
+        );
+        setUsername(profile.user?.username ?? null);
+      } catch {
+        setUsername(null);
+      }
+    })();
   }, []);
 
   async function runBacktest() {
@@ -129,6 +143,13 @@ export default function MoreScreen() {
             </GlassCard>
           </Pressable>
         ))}
+
+        {username ? (
+          <>
+            <SectionHeader title="Share performance" subtitle="Branded card + public link" />
+            <ShareSheet username={username} />
+          </>
+        ) : null}
 
         <SectionHeader title="Leaderboard" />
         <Text style={styles.lbSection}>Top strategies</Text>

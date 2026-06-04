@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, formatPercent } from "@/lib/utils";
-import { Settings, Users } from "lucide-react";
+import { Settings, Users, Share2 } from "lucide-react";
+import { PortfolioSharePanel } from "@/components/share/share-card-panel";
 
 type ProfileData = {
   user: {
@@ -120,6 +121,20 @@ export default function MyProfilePage() {
             {formatPercent(profile.portfolio.returnPct)} all-time
           </p>
         </GlassCard>
+      )}
+
+      {u.username && (
+        <section>
+          <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold">
+            <Share2 className="h-5 w-5 text-[var(--camel)]" />
+            Share performance
+          </h2>
+          <p className="mb-4 text-sm text-[var(--foreground-muted)]">
+            Download a branded card or share your public week link — great for iMessage,
+            X, and LinkedIn previews.
+          </p>
+          <PortfolioSharePanel username={u.username} />
+        </section>
       )}
 
       <GlassCard>

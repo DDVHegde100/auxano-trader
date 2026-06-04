@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPercent } from "@/lib/utils";
-import { Heart, UserPlus, MessageCircle } from "lucide-react";
+import { Heart, UserPlus, MessageCircle, Share2 } from "lucide-react";
+import { StrategySharePanel } from "@/components/share/share-card-panel";
 
 export default function StrategyDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -74,6 +75,14 @@ export default function StrategyDetailPage() {
         </div>
       </motion.div>
 
+      <section className="rounded-2xl border border-[var(--camel)]/20 bg-[var(--camel)]/[0.04] p-4">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+          <Share2 className="h-4 w-4 text-[var(--camel)]" />
+          Share this strategy
+        </h3>
+        <StrategySharePanel slug={slug} />
+      </section>
+
       <div className="flex gap-2 border-b border-white/[0.08]">
         {(["overview", "performance", "comments"] as const).map((t) => (
           <button
@@ -111,14 +120,16 @@ export default function StrategyDetailPage() {
       )}
 
       {tab === "performance" && backtest?.result && (
-        <GlassCard>
-          <h3 className="mb-4 font-semibold">Equity Curve</h3>
-          <PerformanceChart
-            data={
-              backtest.result.equityCurve as { date: string; value: number }[]
-            }
-          />
-        </GlassCard>
+        <>
+          <GlassCard>
+            <h3 className="mb-4 font-semibold">Equity Curve</h3>
+            <PerformanceChart
+              data={
+                backtest.result.equityCurve as { date: string; value: number }[]
+              }
+            />
+          </GlassCard>
+        </>
       )}
 
       {tab === "comments" && (

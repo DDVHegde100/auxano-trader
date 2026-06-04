@@ -186,3 +186,19 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Share card print / save as PDF */
+@media print {
+  body {
+    background: #1a1209 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .aux-sidebar,
+  .print\\:hidden {
+    display: none !important;
+  }
+  #auxano-share-card {
+    break-inside: avoid;
+  }
+}

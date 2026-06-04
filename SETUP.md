@@ -344,9 +344,7 @@ Rich strategy IDE — Blocks + Python + backtest + publish exist; missing: versi
 12
 Friends-only visibility on leaderboard/profile
 Your privacy model
-13
-Strategy summary + export card (image/share sheet)
-Shareable performance
+13. ~~Strategy summary + export card (image/share sheet)~~ — `/u/[username]/week`, `/share/s/[slug]`, PNG + OG
 14
 Legal pages (privacy, terms, paper disclaimer)
 App Store
