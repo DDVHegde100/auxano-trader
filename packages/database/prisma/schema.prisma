@@ -1,0 +1,399 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum InvestingExperience {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  PROFESSIONAL
+}
+
+enum RiskTolerance {
+  CONSERVATIVE
+  MODERATE
+  AGGRESSIVE
+  VERY_AGGRESSIVE
+}
+
+enum FinancialGoal {
+  WEALTH_BUILDING
+  INCOME_GENERATION
+  CAPITAL_PRESERVATION
+  LEARNING
+  RETIREMENT
+}
+
+enum StrategyCategory {
+  CONSERVATIVE
+  BALANCED
+  AGGRESSIVE
+  MOMENTUM
+  MEAN_REVERSION
+  GROWTH
+  VALUE
+}
+
+enum RiskRating {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderStatus {
+  PENDING
+  FILLED
+  CANCELLED
+  REJECTED
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
+}
+
+enum BacktestStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id                  String              @id @default(cuid())
+  clerkId             String              @unique
+  email               String              @unique
+  name                String?
+  username            String?             @unique
+  avatarUrl           String?
+  bio                 String?
+  investingExperience InvestingExperience?
+  riskTolerance       RiskTolerance?
+  financialGoal       FinancialGoal?
+  onboardingComplete  Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  paperAccount     PaperAccount?
+  strategies       Strategy[]
+  watchlists       Watchlist[]
+  savedStrategies  SavedStrategy[]
+  followedStrategies StrategyFollow[]
+  followedUsers    UserFollow[]       @relation("Follower")
+  followers        UserFollow[]       @relation("Following")
+  likes            StrategyLike[]
+  comments         Comment[]
+  backtests        Backtest[]
+  notifications    Notification[]
+
+  @@index([clerkId])
+  @@index([username])
+}
+
+model UserFollow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+model PaperAccount {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  cashBalance     Decimal  @default(100000) @db.Decimal(18, 4)
+  initialBalance  Decimal  @default(100000) @db.Decimal(18, 4)
+  realizedPnl     Decimal  @default(0) @db.Decimal(18, 4)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  positions Position[]
+  orders    Order[]
+  trades    Trade[]
+}
+
+model Position {
+  id            String   @id @default(cuid())
+  accountId     String
+  symbol        String
+  quantity      Decimal  @db.Decimal(18, 6)
+  averageCost   Decimal  @db.Decimal(18, 4)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  account PaperAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, symbol])
+  @@index([symbol])
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  accountId   String
+  symbol      String
+  side        OrderSide
+  type        OrderType   @default(MARKET)
+  quantity    Decimal     @db.Decimal(18, 6)
+  limitPrice  Decimal?    @db.Decimal(18, 4)
+  status      OrderStatus @default(PENDING)
+  filledPrice Decimal?    @db.Decimal(18, 4)
+  filledAt    DateTime?
+  createdAt   DateTime    @default(now())
+
+  account PaperAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  trade   Trade?
+
+  @@index([accountId, createdAt])
+}
+
+model Trade {
+  id          String    @id @default(cuid())
+  accountId   String
+  orderId     String    @unique
+  symbol      String
+  side        OrderSide
+  quantity    Decimal   @db.Decimal(18, 6)
+  price       Decimal   @db.Decimal(18, 4)
+  realizedPnl Decimal @default(0) @db.Decimal(18, 4)
+  executedAt  DateTime  @default(now())
+
+  account PaperAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  order   Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, executedAt])
+  @@index([symbol])
+}
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String   @default("My Watchlist")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  WatchlistItem[]
+
+  @@index([userId])
+}
+
+model WatchlistItem {
+  id          String   @id @default(cuid())
+  watchlistId String
+  symbol      String
+  addedAt     DateTime @default(now())
+
+  watchlist Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+
+  @@unique([watchlistId, symbol])
+}
+
+model Strategy {
+  id              String           @id @default(cuid())
+  creatorId       String
+  name            String
+  slug            String           @unique
+  description     String           @db.Text
+  category        StrategyCategory
+  riskRating      RiskRating       @default(MEDIUM)
+  isPublic        Boolean          @default(true)
+  isPublished     Boolean          @default(false)
+  logicJson       Json             @default("{\"nodes\":[],\"edges\":[]}")
+  historicalReturn Decimal?        @db.Decimal(10, 4)
+  sharpeRatio     Decimal?         @db.Decimal(10, 4)
+  volatilityScore Decimal?         @db.Decimal(10, 4)
+  winRate         Decimal?         @db.Decimal(10, 4)
+  maxDrawdown     Decimal?         @db.Decimal(10, 4)
+  quantScore      Int              @default(0)
+  followerCount   Int              @default(0)
+  likeCount       Int              @default(0)
+  deployedCount   Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  creator   User             @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  backtests Backtest[]
+  follows   StrategyFollow[]
+  likes     StrategyLike[]
+  comments  Comment[]
+  saves     SavedStrategy[]
+  deployments StrategyDeployment[]
+
+  @@index([creatorId])
+  @@index([category])
+  @@index([quantScore])
+}
+
+model StrategyDeployment {
+  id         String   @id @default(cuid())
+  strategyId String
+  userId     String
+  isActive   Boolean  @default(true)
+  allocated  Decimal  @default(0) @db.Decimal(18, 4)
+  createdAt  DateTime @default(now())
+
+  strategy Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+
+  @@unique([strategyId, userId])
+}
+
+model StrategyFollow {
+  id         String   @id @default(cuid())
+  userId     String
+  strategyId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategy Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, strategyId])
+}
+
+model StrategyLike {
+  id         String   @id @default(cuid())
+  userId     String
+  strategyId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategy Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, strategyId])
+}
+
+model SavedStrategy {
+  id         String   @id @default(cuid())
+  userId     String
+  strategyId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategy Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, strategyId])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  userId     String
+  strategyId String
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategy Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+
+  @@index([strategyId, createdAt])
+}
+
+model Backtest {
+  id          String         @id @default(cuid())
+  userId      String
+  strategyId  String?
+  name        String
+  symbols     String[]
+  startDate   DateTime
+  endDate     DateTime
+  logicJson   Json
+  status      BacktestStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  completedAt DateTime?
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategy Strategy?       @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+  result   BacktestResult?
+
+  @@index([userId])
+}
+
+model BacktestResult {
+  id            String   @id @default(cuid())
+  backtestId    String   @unique
+  annualReturn  Decimal  @db.Decimal(10, 4)
+  sharpeRatio   Decimal  @db.Decimal(10, 4)
+  sortinoRatio  Decimal  @db.Decimal(10, 4)
+  maxDrawdown   Decimal  @db.Decimal(10, 4)
+  winRate       Decimal  @db.Decimal(10, 4)
+  profitFactor  Decimal  @db.Decimal(10, 4)
+  totalTrades   Int
+  equityCurve   Json
+  benchmarkCurve Json
+  tradeLog      Json     @default("[]")
+
+  backtest Backtest @relation(fields: [backtestId], references: [id], onDelete: Cascade)
+}
+
+model MarketQuote {
+  id        String   @id @default(cuid())
+  symbol    String   @unique
+  name      String
+  price     Decimal  @db.Decimal(18, 4)
+  change    Decimal  @db.Decimal(10, 4)
+  changePct Decimal  @db.Decimal(10, 4)
+  volume    BigInt   @default(0)
+  high52    Decimal? @db.Decimal(18, 4)
+  low52     Decimal? @db.Decimal(18, 4)
+  sector    String?
+  updatedAt DateTime @updatedAt
+
+  priceHistory PriceHistory[]
+}
+
+model PriceHistory {
+  id       String   @id @default(cuid())
+  symbol   String
+  date     DateTime @db.Date
+  open     Decimal  @db.Decimal(18, 4)
+  high     Decimal  @db.Decimal(18, 4)
+  low      Decimal  @db.Decimal(18, 4)
+  close    Decimal  @db.Decimal(18, 4)
+  volume   BigInt   @default(0)
+
+  quote MarketQuote @relation(fields: [symbol], references: [symbol], onDelete: Cascade)
+
+  @@unique([symbol, date])
+  @@index([symbol, date])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+model PortfolioSnapshot {
+  id              String   @id @default(cuid())
+  accountId       String
+  totalValue      Decimal  @db.Decimal(18, 4)
+  cashBalance     Decimal  @db.Decimal(18, 4)
+  positionsValue  Decimal  @db.Decimal(18, 4)
+  dailyPnl        Decimal  @db.Decimal(18, 4)
+  totalReturnPct  Decimal  @db.Decimal(10, 4)
+  recordedAt      DateTime @default(now())
+
+  @@index([accountId, recordedAt])
+}
