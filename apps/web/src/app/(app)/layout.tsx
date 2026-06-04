@@ -5,6 +5,10 @@ import { AppShell } from "@/components/layout/app-shell";
 import { getOrCreateDbUser } from "@/lib/auth";
 import { getSessionClerkId } from "@/lib/session";
 import { checkDatabaseConnection } from "@/lib/db-health";
+import {
+  ensureSignInOnboardingSkipped,
+  shouldForceOnboarding,
+} from "@/lib/onboarding-policy";
 
 export default async function AppLayout({
   children,
@@ -26,8 +30,11 @@ export default async function AppLayout({
     redirect("/sign-in?error=account");
   }
 
-  if (user && !user.onboardingComplete) {
-    redirect("/onboarding");
+  if (user) {
+    user = await ensureSignInOnboardingSkipped(user);
+    if (await shouldForceOnboarding(user)) {
+      redirect("/onboarding");
+    }
   }
 
   return <AppShell>{children}</AppShell>;

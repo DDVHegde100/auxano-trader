@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getSessionClerkId } from "@/lib/session";
 import { getOrCreateDbUser } from "@/lib/auth";
 import { checkDatabaseConnection } from "@/lib/db-health";
+import { shouldForceOnboarding } from "@/lib/onboarding-policy";
 
 export default async function OnboardingLayout({
   children,
@@ -20,6 +21,9 @@ export default async function OnboardingLayout({
 
   const user = await getOrCreateDbUser();
   if (user?.onboardingComplete) {
+    redirect("/dashboard");
+  }
+  if (user && !(await shouldForceOnboarding(user))) {
     redirect("/dashboard");
   }
 

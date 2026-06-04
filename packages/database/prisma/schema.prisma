@@ -70,6 +70,12 @@ enum BacktestStatus {
   FAILED
 }
 
+enum FollowStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 model User {
   id                  String              @id @default(cuid())
   clerkId             String              @unique
@@ -82,6 +88,7 @@ model User {
   riskTolerance       RiskTolerance?
   financialGoal       FinancialGoal?
   onboardingComplete  Boolean             @default(false)
+  isProfilePublic     Boolean             @default(true)
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 
@@ -102,15 +109,19 @@ model User {
 }
 
 model UserFollow {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   followerId  String
   followingId String
-  createdAt   DateTime @default(now())
+  status      FollowStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  respondedAt DateTime?
 
   follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
   following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
+  @@index([followingId, status])
+  @@index([followerId, status])
 }
 
 model PaperAccount {

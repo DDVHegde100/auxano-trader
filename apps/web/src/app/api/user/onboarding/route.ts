@@ -1,42 +1,37 @@
 import { NextResponse } from "next/server";
 import { requireDbUser } from "@/lib/auth";
 import { prisma } from "@auxano/database";
+import { cookies } from "next/headers";
+import { ONBOARDING_SIGNUP_COOKIE } from "@/lib/onboarding-storage";
 
 export async function POST(req: Request) {
   try {
     const user = await requireDbUser(req);
     const body = await req.json();
 
-    const username =
-      typeof body.username === "string"
-        ? body.username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "")
-        : "";
+    const investingExperience = body.investingExperience || null;
+    const riskTolerance = body.riskTolerance || null;
+    const financialGoal = body.financialGoal || null;
 
-    if (!username || username.length < 2) {
+    if (!investingExperience || !riskTolerance || !financialGoal) {
       return NextResponse.json(
-        { error: "Username must be at least 2 characters (letters, numbers, underscore)" },
+        { error: "Please complete experience, risk, and goal steps" },
         { status: 400 }
       );
-    }
-
-    const taken = await prisma.user.findFirst({
-      where: { username, NOT: { id: user.id } },
-    });
-    if (taken) {
-      return NextResponse.json({ error: "Username already taken" }, { status: 409 });
     }
 
     const updated = await prisma.user.update({
       where: { id: user.id },
       data: {
-        name: body.name?.trim() || user.name,
-        username,
-        investingExperience: body.investingExperience || null,
-        riskTolerance: body.riskTolerance || null,
-        financialGoal: body.financialGoal || null,
+        investingExperience,
+        riskTolerance,
+        financialGoal,
         onboardingComplete: true,
       },
     });
+
+    const jar = await cookies();
+    jar.delete(ONBOARDING_SIGNUP_COOKIE);
 
     return NextResponse.json({
       user: updated,
@@ -56,7 +51,18 @@ export async function GET(req: Request) {
     const user = await requireDbUser(req);
     return NextResponse.json({
       onboardingComplete: user.onboardingComplete,
-      user,
+      user: {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        investingExperience: user.investingExperience,
+        riskTolerance: user.riskTolerance,
+        financialGoal: user.financialGoal,
+        isProfilePublic: user.isProfilePublic,
+        onboardingComplete: user.onboardingComplete,
+      },
     });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

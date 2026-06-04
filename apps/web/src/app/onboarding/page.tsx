@@ -4,10 +4,15 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { GlassCard } from "@/components/auxano/glass-card";
+import {
+  readOnboardingDraft,
+  writeOnboardingDraft,
+  clearOnboardingDraft,
+  clearSignupOnboardingCookie,
+} from "@/lib/onboarding-storage";
 
-const STEPS = ["profile", "experience", "goals", "welcome"] as const;
+const STEPS = ["experience", "goals", "welcome"] as const;
 
 const EXPERIENCE = [
   { value: "BEGINNER", label: "Beginner", desc: "New to investing" },
@@ -36,9 +41,8 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState("there");
   const [form, setForm] = useState({
-    name: "",
-    username: "",
     investingExperience: "",
     riskTolerance: "",
     financialGoal: "",
@@ -47,15 +51,40 @@ export default function OnboardingPage() {
   const current = STEPS[step];
 
   useEffect(() => {
+    const draft = readOnboardingDraft();
+    if (draft) {
+      setForm({
+        investingExperience: draft.investingExperience,
+        riskTolerance: draft.riskTolerance,
+        financialGoal: draft.financialGoal,
+      });
+    }
+
     fetch("/api/user/onboarding", { credentials: "same-origin" })
       .then((r) => r.json())
       .then((d) => {
         if (d.onboardingComplete) {
           router.replace("/dashboard");
+          return;
         }
+        const u = d.user;
+        const label =
+          u?.name?.split(" ")[0] ||
+          (u?.username ? `@${u.username}` : null);
+        if (label) setDisplayName(label.replace(/^@/, ""));
       })
       .catch(() => {});
   }, [router]);
+
+  useEffect(() => {
+    if (
+      form.investingExperience ||
+      form.riskTolerance ||
+      form.financialGoal
+    ) {
+      writeOnboardingDraft(form);
+    }
+  }, [form]);
 
   async function complete() {
     setLoading(true);
@@ -69,9 +98,11 @@ export default function OnboardingPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Could not save profile. Try again.");
+        setError(data.error ?? "Could not save preferences. Try again.");
         return;
       }
+      clearOnboardingDraft();
+      clearSignupOnboardingCookie();
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -102,35 +133,12 @@ export default function OnboardingPage() {
           exit={{ opacity: 0, x: -20 }}
           className="w-full max-w-lg"
         >
-          {current === "profile" && (
-            <GlassCard glow>
-              <h2 className="text-2xl font-semibold">Let&apos;s get to know you</h2>
-              <p className="mt-2 text-[var(--foreground-muted)]">Your investing identity starts here</p>
-              <div className="mt-6 space-y-4">
-                <Input
-                  placeholder="Full name"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                />
-                <Input
-                  placeholder="Username"
-                  value={form.username}
-                  onChange={(e) => setForm({ ...form, username: e.target.value })}
-                />
-              </div>
-              <Button
-                className="mt-6 w-full"
-                disabled={!form.name || !form.username}
-                onClick={() => setStep(1)}
-              >
-                Continue
-              </Button>
-            </GlassCard>
-          )}
-
           {current === "experience" && (
             <GlassCard glow>
               <h2 className="text-2xl font-semibold">Investing experience</h2>
+              <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+                Your username is already set from sign-up — we only need your preferences here.
+              </p>
               <div className="mt-6 grid gap-3">
                 {EXPERIENCE.map((e) => (
                   <button
@@ -153,7 +161,7 @@ export default function OnboardingPage() {
               <Button
                 className="mt-6 w-full"
                 disabled={!form.investingExperience}
-                onClick={() => setStep(2)}
+                onClick={() => setStep(1)}
               >
                 Continue
               </Button>
@@ -200,7 +208,7 @@ export default function OnboardingPage() {
               <Button
                 className="mt-6 w-full"
                 disabled={!form.riskTolerance || !form.financialGoal}
-                onClick={() => setStep(3)}
+                onClick={() => setStep(2)}
               >
                 Continue
               </Button>
@@ -216,12 +224,10 @@ export default function OnboardingPage() {
               >
                 ✓
               </motion.div>
-              <h2 className="text-3xl font-semibold">
-                Welcome, {form.name.split(" ")[0]}
-              </h2>
+              <h2 className="text-3xl font-semibold">Welcome, {displayName}</h2>
               <p className="mt-3 text-[var(--foreground-muted)]">
                 Your paper trading account is funded with{" "}
-                <span className="text-[var(--camel)] font-semibold">$100,000</span>{" "}
+                <span className="font-semibold text-[var(--camel)]">$100,000</span>{" "}
                 virtual capital.
               </p>
               {error && (

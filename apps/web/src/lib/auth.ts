@@ -48,6 +48,21 @@ export async function getOrCreateDbUser(req?: Request) {
 
   let user = await prisma.user.findUnique({ where: { clerkId } });
 
+  if (user && !user.username) {
+    try {
+      const sessionUser = await currentUser();
+      const uname = sessionUser?.username;
+      if (uname) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { username: uname.toLowerCase() },
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
   if (!user) {
     if (clerkId === DEV_TEST_CLERK_ID) {
       const { DEV_TEST_EMAIL, DEV_TEST_NAME, DEV_TEST_USERNAME } = await import(
@@ -80,16 +95,19 @@ export async function getOrCreateDbUser(req?: Request) {
         null);
     let avatarUrl = sessionUser?.imageUrl ?? null;
 
-    if (!email) {
+    let clerkUsername: string | null = sessionUser?.username ?? null;
+    if (!email || !clerkUsername) {
       try {
         const apiUser = await clerkClient.users.getUser(clerkId);
-        email = apiUser.emailAddresses[0]?.emailAddress;
+        email = email ?? apiUser.emailAddresses[0]?.emailAddress;
         name =
+          name ||
           [apiUser.firstName, apiUser.lastName].filter(Boolean).join(" ") ||
-          name;
-        avatarUrl = apiUser.imageUrl;
+          null;
+        avatarUrl = avatarUrl ?? apiUser.imageUrl;
+        clerkUsername = clerkUsername ?? apiUser.username ?? null;
       } catch {
-        email = `${clerkId}@auxano.local`;
+        email = email ?? `${clerkId}@auxano.local`;
       }
     }
 
@@ -98,6 +116,7 @@ export async function getOrCreateDbUser(req?: Request) {
         clerkId,
         email: email ?? `${clerkId}@auxano.local`,
         name,
+        username: clerkUsername ? clerkUsername.toLowerCase() : null,
         avatarUrl,
       },
     });

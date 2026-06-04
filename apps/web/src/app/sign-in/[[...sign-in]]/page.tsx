@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 import { SignIn } from "@clerk/nextjs";
+import { ClearSignupOnboardingCookie } from "@/components/auth/clear-signup-cookie";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -97,6 +98,8 @@ function SignInContent() {
             </p>
           </form>
         ) : (
+          <>
+          <ClearSignupOnboardingCookie />
           <SignIn
             routing="path"
             path="/sign-in"
@@ -118,6 +121,7 @@ function SignInContent() {
               },
             }}
           />
+          </>
         )}
       </div>
     </div>

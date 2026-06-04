@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SignUp } from "@clerk/nextjs";
+import { SignupOnboardingCookie } from "@/components/auth/signup-onboarding-cookie";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ export default function SignUpPage() {
             Auth help
           </Link>
         </p>
+        <SignupOnboardingCookie />
         <SignUp
           routing="path"
           path="/sign-up"
