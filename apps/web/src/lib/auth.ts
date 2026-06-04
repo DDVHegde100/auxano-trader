@@ -10,10 +10,11 @@ const clerkClient = createClerkClient({
 });
 
 async function resolveClerkId(req?: Request): Promise<string | null> {
-  if (!req) {
-    const sessionId = await getSessionClerkId();
-    if (sessionId) return sessionId;
-  } else if (devAuthEnabled()) {
+  // Clerk session cookie (web UI + same-origin fetch to API routes)
+  const sessionId = await getSessionClerkId();
+  if (sessionId) return sessionId;
+
+  if (req && devAuthEnabled()) {
     const cookieHeader = req.headers.get("cookie") ?? "";
     const match = cookieHeader.match(/auxano_dev_token=([^;]+)/);
     if (match?.[1]) {
@@ -23,11 +24,11 @@ async function resolveClerkId(req?: Request): Promise<string | null> {
   }
 
   if (!req) return null;
+
   const header = req.headers.get("Authorization");
   if (!header?.startsWith("Bearer ")) return null;
 
   const token = header.slice(7);
-
   const devClerkId = verifyDevToken(token);
   if (devClerkId) return devClerkId;
 

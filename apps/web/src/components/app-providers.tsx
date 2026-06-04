@@ -18,6 +18,8 @@ export function AppProviders({
       signUpUrl="/sign-up"
       signInFallbackRedirectUrl="/dashboard"
       signUpFallbackRedirectUrl="/onboarding"
+      afterSignInUrl="/dashboard"
+      afterSignUpUrl="/onboarding"
     >
       {children}
     </ClerkProvider>

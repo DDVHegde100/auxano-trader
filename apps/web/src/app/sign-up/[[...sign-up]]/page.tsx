@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SignUp } from "@clerk/nextjs";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,16 @@ export default function SignUpPage() {
           <h1 className="aux-h2">Join Auxano</h1>
           <p className="mt-1 text-muted">$100,000 virtual capital · paper trading only</p>
         </div>
+        <p className="mb-4 text-center text-xs text-muted">
+          Already have an account?{" "}
+          <Link href="/sign-in" className="text-accent hover:underline">
+            Sign in
+          </Link>
+          {" · "}
+          <Link href="/docs/authentication" className="text-accent hover:underline">
+            Auth help
+          </Link>
+        </p>
         <SignUp
           routing="path"
           path="/sign-up"

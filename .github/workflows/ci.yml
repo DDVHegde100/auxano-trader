@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      CI: "true"
+      NODE_ENV: production
+      ALLOW_DEV_AUTH: "false"
+      NEXT_PUBLIC_ALLOW_DEV_AUTH: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: node scripts/check-prod-env.mjs
+      - run: npm run db:generate
+      - run: npm run lint --workspace=@auxano/web --if-present

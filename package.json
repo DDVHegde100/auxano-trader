@@ -21,6 +21,7 @@
     "db:seed": "npm run seed --workspace=@auxano/database",
     "db:setup": "npm run db:generate && npm run db:push && npm run db:seed && node scripts/test-db.mjs",
     "db:setup:supabase": "node scripts/setup-supabase.mjs",
+    "check:prod-env": "CI=true NODE_ENV=production node scripts/check-prod-env.mjs",
     "web:clean": "npm run dev:clean --workspace=@auxano/web",
     "lint": "npm run lint --workspaces --if-present",
     "git:bootstrap": "bash scripts/bootstrap-git-history.sh"

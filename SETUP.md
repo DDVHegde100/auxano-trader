@@ -312,18 +312,10 @@ Rich strategy IDE — Blocks + Python + backtest + publish exist; missing: versi
 
 --
 
-1
-Fix Supabase DATABASE_URL + prisma db push
-Unblocks everything
-2
-Commit & push all pending work to auxano-trader
-GitHub matches reality
-3
-Clerk prod paths + email verification docs in app
-Real sign-up
-4
-ALLOW_DEV_AUTH=false gate in CI/production
-Security
+1. ~~Fix Supabase DATABASE_URL + prisma db push~~ — local DB works; use `npm run db:setup:supabase` when Supabase is live
+2. ~~Commit & push~~ — run `git push origin main` after each release
+3. ~~Clerk prod paths + email verification docs~~ — see `/docs/authentication` in the web app
+4. ~~ALLOW_DEV_AUTH=false in CI~~ — `scripts/check-prod-env.mjs` + `.github/workflows/ci.yml`
 5
 Vercel deploy + env on Vercel
 Public API for mobile

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     username: "",
@@ -45,15 +46,39 @@ export default function OnboardingPage() {
 
   const current = STEPS[step];
 
+  useEffect(() => {
+    fetch("/api/user/onboarding", { credentials: "same-origin" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.onboardingComplete) {
+          router.replace("/dashboard");
+        }
+      })
+      .catch(() => {});
+  }, [router]);
+
   async function complete() {
     setLoading(true);
-    await fetch("/api/user/onboarding", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    setLoading(false);
-    router.push("/dashboard");
+    setError(null);
+    try {
+      const res = await fetch("/api/user/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Could not save profile. Try again.");
+        return;
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Network error — check that the server and database are running.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -199,6 +224,9 @@ export default function OnboardingPage() {
                 <span className="text-[var(--camel)] font-semibold">$100,000</span>{" "}
                 virtual capital.
               </p>
+              {error && (
+                <p className="mt-4 text-center text-sm text-negative">{error}</p>
+              )}
               <Button
                 className="mt-8 w-full"
                 size="lg"

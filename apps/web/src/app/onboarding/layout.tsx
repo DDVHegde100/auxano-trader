@@ -18,7 +18,10 @@ export default async function OnboardingLayout({
     redirect("/sign-up?error=database");
   }
 
-  await getOrCreateDbUser();
+  const user = await getOrCreateDbUser();
+  if (user?.onboardingComplete) {
+    redirect("/dashboard");
+  }
 
   return (
     <div className="min-h-screen bg-[var(--background)]">{children}</div>
