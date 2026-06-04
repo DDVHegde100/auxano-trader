@@ -335,21 +335,12 @@ Rich strategy IDE — Blocks + Python + backtest + publish exist; missing: versi
 4. ~~ALLOW_DEV_AUTH=false in CI~~ — `scripts/check-prod-env.mjs` + `.github/workflows/ci.yml`
 5. ~~Vercel deploy + env on Vercel~~ — [DEPLOY_VERCEL.md](./DEPLOY_VERCEL.md), `apps/web/vercel.json`
 6. ~~Health `/api/health` + `/api/ready` + `/api/live`~~ — ops + mobile preflight; `npm run verify:deploy`
-7
-Add eas.json + iOS bundle + credentials
-TestFlight builds
-8
-Mobile prod env (EXPO_PUBLIC_API_URL, Clerk)
-Phone hits prod API
-9
-Leaderboard: live quotes + refresh after trade
-Accurate top 10
-10
-User profile page + isProfilePublic + API
-Privacy foundation
-11
-Friend requests API (UserFollow + pending state)
-Social compete
+7. **EAS + iOS (scaffold done — build later)** — `eas.json`, `app.config.ts`, [MOBILE_EAS.md](./MOBILE_EAS.md). *Pending:* fill `.env.production`, `eas login`, `eas init`, TestFlight build.
+8. **Mobile prod env (deferred)** — API URL in `eas.json` / example; *pending:* Clerk key in `.env.production` + EAS env when you return for TestFlight. Dev still uses `apps/mobile/.env` + LAN IP.
+
+9. ~~Leaderboard: live quotes + refresh after trade~~ — `/leaderboard`, `refreshLeaderboardQuotes`, trade event
+10. ~~User profile page + isProfilePublic + API~~ — `/profile`, `/profile/[username]`, `/api/user/profile`
+11. ~~Friend requests API (UserFollow + pending state)~~ — `/friends`, accept/decline, search users
 12
 Friends-only visibility on leaderboard/profile
 Your privacy model
@@ -360,4 +351,4 @@ Shareable performance
 Legal pages (privacy, terms, paper disclaimer)
 App Store
 15
-EAS TestFlight build + internal testing notes
+EAS TestFlight build + submit — resume [MOBILE_EAS.md](./MOBILE_EAS.md) after features 9–14; you already have Apple + Expo accounts

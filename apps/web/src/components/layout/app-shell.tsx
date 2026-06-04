@@ -11,6 +11,8 @@ import {
   Wallet,
   Trophy,
   TrendingUp,
+  Users,
+  UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +25,8 @@ const nav = [
   { href: "/trade", label: "Trade", icon: TrendingUp },
   { href: "/portfolio", label: "Portfolio", icon: Wallet },
   { href: "/leaderboard", label: "Leaders", icon: Trophy },
+  { href: "/friends", label: "Friends", icon: Users },
+  { href: "/profile", label: "Profile", icon: UserCircle },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
