@@ -29,7 +29,7 @@ export default function LeaderboardPage() {
         <Trophy className="h-8 w-8 text-[#C7C7C7]" />
         <div>
           <h1 className="text-3xl font-semibold">Leaderboards</h1>
-          <p className="text-[#B0B0B0]">Top strategies, creators, and traders</p>
+          <p className="text-[var(--foreground-muted)]">Top strategies, creators, and traders</p>
         </div>
       </div>
 
@@ -39,7 +39,7 @@ export default function LeaderboardPage() {
           {data.topStrategies.map((s, i) => (
             <Link key={s.id} href={`/strategies/${s.slug}`}>
               <GlassCard className="flex items-center gap-4 !py-3">
-                <span className="w-8 text-2xl font-bold text-[#B0B0B0]/40">
+                <span className="w-8 text-2xl font-bold text-[var(--foreground-muted)]/40">
                   {i + 1}
                 </span>
                 <QuantScoreBadge score={s.quantScore} size="sm" />
@@ -55,10 +55,10 @@ export default function LeaderboardPage() {
         <div className="space-y-3">
           {data.topCreators.map((c, i) => (
             <GlassCard key={c.username ?? i} className="flex items-center gap-4 !py-3">
-              <span className="w-8 text-2xl font-bold text-[#B0B0B0]/40">{i + 1}</span>
+              <span className="w-8 text-2xl font-bold text-[var(--foreground-muted)]/40">{i + 1}</span>
               <div className="flex-1">
                 <p className="font-medium">{c.name}</p>
-                <p className="text-xs text-[#B0B0B0]">
+                <p className="text-xs text-[var(--foreground-muted)]">
                   {c.strategyCount} strategies · score {c.score}
                 </p>
               </div>
@@ -72,10 +72,10 @@ export default function LeaderboardPage() {
         <div className="space-y-3">
           {data.topTraders.map((t, i) => (
             <GlassCard key={i} className="flex items-center gap-4 !py-3">
-              <span className="w-8 text-2xl font-bold text-[#B0B0B0]/40">{i + 1}</span>
+              <span className="w-8 text-2xl font-bold text-[var(--foreground-muted)]/40">{i + 1}</span>
               <div className="flex-1">
                 <p className="font-medium">{t.user.name}</p>
-                <p className="text-xs text-[#B0B0B0]">
+                <p className="text-xs text-[var(--foreground-muted)]">
                   {formatCurrency(t.portfolioValue)}
                 </p>
               </div>

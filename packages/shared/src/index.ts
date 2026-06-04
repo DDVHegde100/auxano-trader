@@ -1,10 +1,15 @@
 export * from "./theme";
+export { PALETTE, SPACING, RADIUS, FONT_FAMILY } from "./theme";
 export * from "./types";
 export * from "./quant-score";
 export * from "./market-simulator";
 export * from "./backtest-engine";
 export * from "./paper-trading";
 export * from "./preset-algorithms";
+export * from "./preset-backtest";
 export * from "./layman-rater";
 export * from "./live-market";
 export * from "./dev-auth";
+export * from "./strategy-meta";
+export * from "./block-catalog";
+export * from "./blocks-to-python";

@@ -21,6 +21,7 @@ import { theme } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { formatUsd, formatPct, formatTime } from "@/src/lib/format";
 import { usePolling } from "@/src/hooks/usePolling";
+import { getPresetById } from "@auxano/shared";
 
 interface QuoteDetail {
   symbol: string;
@@ -43,12 +44,18 @@ interface LiveQuote {
 
 export default function TradeScreen() {
   const { getToken } = useAppAuth();
-  const params = useLocalSearchParams<{ symbol?: string }>();
+  const params = useLocalSearchParams<{ symbol?: string; preset?: string }>();
+  const activePreset = params.preset ? getPresetById(params.preset) : undefined;
+  const allowedSymbols =
+    activePreset && activePreset.logic.meta?.symbolScope !== "universal"
+      ? activePreset.suggestedSymbols
+      : null;
   const [quotes, setQuotes] = useState<LiveQuote[]>([]);
   const [symbol, setSymbol] = useState(params.symbol ?? "AAPL");
   const [detail, setDetail] = useState<QuoteDetail | null>(null);
-  const [qty, setQty] = useState("1");
-  const [maxShares, setMaxShares] = useState(0);
+  const [amountUsd, setAmountUsd] = useState("");
+  const [maxBuyUsd, setMaxBuyUsd] = useState(0);
+  const [maxSellUsd, setMaxSellUsd] = useState(0);
   const [cash, setCash] = useState(0);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -69,11 +76,15 @@ export default function TradeScreen() {
       const max = await apiFetch<{
         maxShares: number;
         cashBalance: number;
+        maxBuyUsd: number;
+        maxSellUsd: number;
       }>(`/api/trading/max-buy?symbol=${symbol}`, { token: token ?? undefined });
-      setMaxShares(max.maxShares);
+      setMaxBuyUsd(max.maxBuyUsd ?? max.maxShares * (d?.price ?? 0));
+      setMaxSellUsd(max.maxSellUsd ?? 0);
       setCash(max.cashBalance);
     } catch {
-      setMaxShares(0);
+      setMaxBuyUsd(0);
+      setMaxSellUsd(0);
     }
   }, [symbol, getToken]);
 
@@ -99,7 +110,8 @@ export default function TradeScreen() {
 
   useEffect(() => {
     if (params.symbol) setSymbol(params.symbol);
-  }, [params.symbol]);
+    else if (allowedSymbols?.[0]) setSymbol(allowedSymbols[0]);
+  }, [params.symbol, allowedSymbols]);
 
   usePolling(() => {
     loadQuotes();
@@ -110,9 +122,14 @@ export default function TradeScreen() {
     setBusy(true);
     setMsg("");
     const token = await getToken();
-    const quantity = Number(qty);
-    if (!quantity || quantity < 1) {
-      setMsg("Enter a valid quantity");
+    const amount = Number(amountUsd);
+    if (!amount || amount <= 0) {
+      setMsg("Enter a dollar amount");
+      setBusy(false);
+      return;
+    }
+    if (side === "BUY" && !params.preset) {
+      setMsg("Pick a DEFAULT algorithm from Marketplace first.");
       setBusy(false);
       return;
     }
@@ -122,7 +139,12 @@ export default function TradeScreen() {
         {
           method: "POST",
           token: token ?? undefined,
-          body: JSON.stringify({ symbol, side, quantity }),
+          body: JSON.stringify({
+            symbol,
+            side,
+            amountUsd: amount,
+            ...(params.preset ? { presetId: params.preset } : {}),
+          }),
         }
       );
       const extra =
@@ -130,13 +152,8 @@ export default function TradeScreen() {
           ? ` · Realized ${formatUsd(res.realizedPnl)}`
           : "";
       setMsg(`${side} filled @ ${formatUsd(res.price)}${extra}`);
+      setAmountUsd("");
       await loadDetail();
-      const max = await apiFetch<{ maxShares: number; cashBalance: number }>(
-        `/api/trading/max-buy?symbol=${symbol}`,
-        { token: token ?? undefined }
-      );
-      setMaxShares(max.maxShares);
-      setCash(max.cashBalance);
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Order failed");
     } finally {
@@ -182,9 +199,9 @@ export default function TradeScreen() {
     loadWatchlist();
   }
 
-  function setMaxBuy() {
-    if (maxShares > 0) setQty(String(maxShares));
-  }
+  const price = detail?.price ?? 0;
+  const amountNum = Number(amountUsd) || 0;
+  const estShares = price > 0 && amountNum > 0 ? Math.floor(amountNum / price) : 0;
 
   const spark = detail?.intraday?.map((b) => b.price) ?? [];
   const inWatchlist = watchlist.includes(symbol);
@@ -196,6 +213,12 @@ export default function TradeScreen() {
         <Text style={styles.sub}>
           Live simulated prices · Buying power {formatUsd(cash)}
         </Text>
+        {activePreset ? (
+          <Text style={styles.presetBanner}>
+            DEFAULT · {activePreset.name}
+            {allowedSymbols ? ` · ${allowedSymbols.join(", ")}` : " · any symbol"}
+          </Text>
+        ) : null}
 
         <GlassCard glow>
           {detail ? (
@@ -259,39 +282,53 @@ export default function TradeScreen() {
         ))}
 
         <GlassCard>
-          <SectionHeader title="Place order" subtitle={`Max buy: ${maxShares} shares`} />
-          <View style={styles.qtyRow}>
-            <Pressable style={styles.qtyBtn} onPress={() => setQty(String(Math.max(1, Number(qty) - 1)))}>
-              <Text style={styles.qtyBtnText}>−</Text>
-            </Pressable>
-            <TextInput
-              style={styles.input}
-              value={qty}
-              onChangeText={setQty}
-              keyboardType="number-pad"
-            />
-            <Pressable style={styles.qtyBtn} onPress={() => setQty(String(Number(qty) + 1))}>
-              <Text style={styles.qtyBtnText}>+</Text>
-            </Pressable>
-          </View>
+          <SectionHeader title="Place order" subtitle="Amount in USD" />
+          <TextInput
+            style={styles.input}
+            value={amountUsd}
+            onChangeText={setAmountUsd}
+            keyboardType="decimal-pad"
+            placeholder="0.00"
+            placeholderTextColor={theme.textSecondary}
+          />
+          {estShares > 0 ? (
+            <Text style={styles.est}>
+              ≈ {estShares} share{estShares !== 1 ? "s" : ""} at {formatUsd(price)}
+            </Text>
+          ) : null}
           <View style={styles.quickQty}>
-            {["1", "5", "10", "25"].map((n) => (
-              <Pressable key={n} style={styles.quickChip} onPress={() => setQty(n)}>
-                <Text style={styles.quickChipText}>{n}</Text>
-              </Pressable>
-            ))}
-            <Pressable style={styles.quickChip} onPress={setMaxBuy}>
-              <Text style={[styles.quickChipText, { color: theme.success }]}>Max</Text>
+            <Pressable
+              style={styles.quickChip}
+              onPress={() => setAmountUsd(String(Math.floor(maxBuyUsd * 0.25 * 100) / 100))}
+            >
+              <Text style={styles.quickChipText}>25% cash</Text>
             </Pressable>
+            <Pressable
+              style={styles.quickChip}
+              onPress={() => setAmountUsd(String(Math.floor(maxBuyUsd * 0.5 * 100) / 100))}
+            >
+              <Text style={styles.quickChipText}>50% cash</Text>
+            </Pressable>
+            <Pressable
+              style={styles.quickChip}
+              onPress={() => setAmountUsd(String(Math.floor(maxBuyUsd * 100) / 100))}
+            >
+              <Text style={[styles.quickChipText, { color: theme.success }]}>Max buy</Text>
+            </Pressable>
+            {maxSellUsd > 0 ? (
+              <Pressable
+                style={styles.quickChip}
+                onPress={() => setAmountUsd(String(Math.floor(maxSellUsd * 100) / 100))}
+              >
+                <Text style={styles.quickChipText}>Sell all</Text>
+              </Pressable>
+            ) : null}
           </View>
-          <Text style={styles.est}>
-            Est. {formatUsd((detail?.price ?? 0) * Number(qty || 0))}
-          </Text>
           <View style={styles.btns}>
             <PrimaryButton
               label="Buy"
               onPress={() => order("BUY")}
-              variant="success"
+              variant="primary"
               loading={busy}
               style={styles.half}
             />
@@ -305,7 +342,7 @@ export default function TradeScreen() {
           </View>
           <PrimaryButton label="Sell all shares" onPress={sellAll} variant="ghost" />
           <PrimaryButton
-            label={inWatchlist ? "On watchlist ✓" : "Add to watchlist"}
+            label={inWatchlist ? "On watchlist" : "Add to watchlist"}
             onPress={addWatchlist}
             variant="ghost"
             disabled={inWatchlist}
@@ -322,6 +359,12 @@ const styles = StyleSheet.create({
   scroll: { padding: 20, paddingBottom: 48 },
   title: { fontSize: 28, fontWeight: "700", color: theme.textPrimary },
   sub: { color: theme.textSecondary, marginBottom: 16 },
+  presetBanner: {
+    color: theme.accent,
+    fontSize: 13,
+    marginBottom: 12,
+    fontWeight: "600",
+  },
   detailHead: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
   sym: { fontSize: 26, fontWeight: "700", color: theme.textPrimary },
   name: { color: theme.textSecondary, fontSize: 14 },
@@ -338,7 +381,7 @@ const styles = StyleSheet.create({
     borderColor: theme.border,
     marginRight: 8,
   },
-  chipOn: { backgroundColor: "rgba(0,200,83,0.15)", borderColor: theme.success },
+  chipOn: { backgroundColor: "rgba(188,138,95,0.15)", borderColor: theme.success },
   chipText: { color: theme.textSecondary },
   chipOnText: { color: theme.success, fontWeight: "700" },
   qtyRow: { flexDirection: "row", alignItems: "center", gap: 8 },
@@ -352,7 +395,7 @@ const styles = StyleSheet.create({
   },
   qtyBtnText: { color: theme.textPrimary, fontSize: 22 },
   input: {
-    flex: 1,
+    width: "100%",
     textAlign: "center",
     fontSize: 22,
     fontWeight: "600",
@@ -361,6 +404,7 @@ const styles = StyleSheet.create({
     borderColor: theme.border,
     borderRadius: 12,
     padding: 12,
+    marginBottom: 8,
   },
   quickQty: { flexDirection: "row", gap: 8, marginTop: 12, flexWrap: "wrap" },
   quickChip: {

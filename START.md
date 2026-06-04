@@ -1,5 +1,7 @@
 # Start Auxano
 
+**Production keys, Firebase, Clerk, Finnhub:** see [SETUP.md](./SETUP.md).
+
 ## One command (recommended)
 
 **1. Open Docker Desktop** and wait until it says “Running”.

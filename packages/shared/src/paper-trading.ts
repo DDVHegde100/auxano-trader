@@ -94,13 +94,56 @@ export function validateOrder(params: {
     return { valid: false, error: "Invalid price" };
   }
   const cost = params.quantity * params.price;
-  if (params.side === "BUY" && cost > params.cashBalance) {
+  if (params.side === "BUY" && cost > params.cashBalance + 0.01) {
     return { valid: false, error: "Insufficient buying power" };
   }
-  if (params.side === "SELL" && params.quantity > params.positionQuantity) {
-    return { valid: false, error: "Insufficient shares" };
+  if (params.side === "SELL" && params.quantity > params.positionQuantity + 1e-9) {
+    return { valid: false, error: "Insufficient position value" };
   }
   return { valid: true };
+}
+
+/** Convert a dollar amount to whole shares at the given price. */
+export function quantityFromNotional(
+  amountUsd: number,
+  price: number,
+  side: "BUY" | "SELL",
+  limits: { cashBalance: number; positionQuantity: number }
+): { quantity: number; error?: string } {
+  if (!Number.isFinite(amountUsd) || amountUsd <= 0) {
+    return { quantity: 0, error: "Enter a dollar amount greater than zero" };
+  }
+  if (price <= 0) {
+    return { quantity: 0, error: "Invalid price" };
+  }
+
+  let qty = Math.floor(amountUsd / price);
+  if (qty < 1) {
+    return {
+      quantity: 0,
+      error: `Minimum order is one share (~${price.toFixed(2)} USD)`,
+    };
+  }
+
+  if (side === "BUY") {
+    const maxQty = Math.floor(limits.cashBalance / price);
+    if (qty > maxQty) qty = maxQty;
+    if (qty < 1) {
+      return { quantity: 0, error: "Insufficient buying power" };
+    }
+    const cost = qty * price;
+    if (cost > limits.cashBalance + 0.01) {
+      return { quantity: 0, error: "Insufficient buying power" };
+    }
+  } else {
+    const maxQty = Math.floor(limits.positionQuantity);
+    if (qty > maxQty) qty = maxQty;
+    if (qty < 1) {
+      return { quantity: 0, error: "No shares to sell at this amount" };
+    }
+  }
+
+  return { quantity: qty };
 }
 
 export function computeRealizedPnl(

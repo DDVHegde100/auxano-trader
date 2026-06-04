@@ -12,8 +12,10 @@
   "dependencies": {
     "@auxano/shared": "*",
     "@clerk/clerk-expo": "^2.6.0",
+    "@expo-google-fonts/anaheim": "^0.4.1",
     "expo": "~52.0.0",
     "expo-constants": "~17.0.0",
+    "expo-font": "^13.0.4",
     "expo-linear-gradient": "~14.0.0",
     "expo-linking": "~7.0.0",
     "expo-router": "~4.0.0",

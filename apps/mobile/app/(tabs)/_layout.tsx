@@ -1,10 +1,16 @@
 import { Tabs } from "expo-router";
-import { theme } from "@/src/lib/theme";
+import { colors, tabBar, fontFamily } from "@/src/styles/design-system";
 import { Text } from "react-native";
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   return (
-    <Text style={{ fontSize: 10, color: focused ? theme.success : theme.textSecondary }}>
+    <Text
+      style={{
+        fontSize: 10,
+        fontFamily,
+        color: focused ? colors.accent : colors.textMuted,
+      }}
+    >
       {label}
     </Text>
   );
@@ -15,15 +21,10 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: theme.surface,
-          borderTopColor: theme.border,
-          height: 88,
-          paddingBottom: 28,
-          paddingTop: 8,
-        },
-        tabBarActiveTintColor: theme.success,
-        tabBarInactiveTintColor: theme.textSecondary,
+        tabBarStyle: tabBar.bar,
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarLabelStyle: { fontFamily, fontSize: 11 },
       }}
     >
       <Tabs.Screen

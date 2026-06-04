@@ -1,0 +1,188 @@
+/**
+ * Page-level polish — consistent spacing, borders, and motion
+ */
+
+/* Dashboard */
+.dashboard-hero {
+  margin-bottom: var(--space-8);
+}
+
+.dashboard-hero .portfolio-value {
+  font-size: var(--text-4xl);
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  letter-spacing: var(--tracking-tight);
+}
+
+.dashboard-stat-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .dashboard-stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Portfolio */
+.portfolio-position-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.portfolio-position-row:hover {
+  background: var(--accent-muted);
+  margin-inline: calc(-1 * var(--space-3));
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-lg);
+}
+
+/* Leaderboard */
+.leaderboard-rank {
+  width: 2rem;
+  font-size: var(--text-2xl);
+  color: var(--foreground-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-rank-top {
+  color: var(--camel);
+}
+
+/* Strategy detail */
+.strategy-tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--border-default);
+  margin-bottom: var(--space-6);
+}
+
+.strategy-tab {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--foreground-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.strategy-tab:hover {
+  color: var(--foreground-secondary);
+}
+
+.strategy-tab-active {
+  color: var(--foreground);
+  border-bottom-color: var(--camel);
+}
+
+/* Onboarding */
+.onboarding-progress {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-10);
+}
+
+.onboarding-dot {
+  height: 4px;
+  flex: 1;
+  border-radius: var(--radius-full);
+  background: var(--border-subtle);
+  transition: background var(--duration-normal) var(--ease-out);
+}
+
+.onboarding-dot-active {
+  background: var(--gradient-accent);
+}
+
+.onboarding-option {
+  width: 100%;
+  text-align: left;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
+}
+
+.onboarding-option:hover {
+  border-color: var(--border-strong);
+  background: var(--accent-muted);
+}
+
+.onboarding-option-selected {
+  border-color: var(--border-strong);
+  background: var(--accent-muted);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Auth pages */
+.auth-card {
+  width: 100%;
+  max-width: 28rem;
+}
+
+/* Trade quick actions */
+.trade-action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+/* Marketplace empty */
+.marketplace-empty {
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+  color: var(--foreground-muted);
+}
+
+/* Smooth page enter */
+[data-page] {
+  animation: aux-fade-in var(--duration-slow) var(--ease-out);
+}
+
+/* Chart container */
+.chart-frame {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+  background: rgba(26, 18, 9, 0.4);
+  padding: var(--space-4);
+  overflow: hidden;
+}
+
+/* Allocation legend */
+.allocation-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+/* Mobile-safe tap targets */
+@media (max-width: 767px) {
+  .aux-btn,
+  .aux-chip,
+  .aux-nav-item {
+    min-height: 44px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

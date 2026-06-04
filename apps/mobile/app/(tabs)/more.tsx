@@ -89,7 +89,6 @@ export default function MoreScreen() {
                 style={[styles.chip, presetId === p.id && styles.chipOn]}
                 onPress={() => setPresetId(p.id)}
               >
-                <Text style={styles.chipEmoji}>{p.emoji}</Text>
                 <Text style={presetId === p.id ? styles.chipOnText : styles.chipText}>
                   {p.name}
                 </Text>
@@ -114,7 +113,7 @@ export default function MoreScreen() {
             label={btLoading ? "Running simulation…" : "Run backtest & rate"}
             onPress={runBacktest}
             loading={btLoading}
-            variant="success"
+            variant="primary"
           />
         </GlassCard>
 
@@ -122,7 +121,6 @@ export default function MoreScreen() {
         {PRESET_ALGORITHMS.map((p) => (
           <Pressable key={p.id} onPress={() => deployPreset(p.id)}>
             <GlassCard style={styles.deployRow}>
-              <Text style={styles.deployEmoji}>{p.emoji}</Text>
               <View style={styles.flex}>
                 <Text style={styles.deployName}>{p.name}</Text>
                 <Text style={styles.deployTag}>{p.tagline}</Text>
@@ -219,7 +217,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minWidth: 100,
   },
-  chipOn: { borderColor: theme.success, backgroundColor: "rgba(0,200,83,0.1)" },
+  chipOn: { borderColor: theme.success, backgroundColor: "rgba(188,138,95,0.1)" },
   chipEmoji: { fontSize: 20 },
   chipText: { color: theme.textSecondary, fontSize: 12, marginTop: 4 },
   chipOnText: { color: theme.success, fontWeight: "600", fontSize: 12, marginTop: 4 },

@@ -1,13 +1,15 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Anaheim } from "next/font/google";
 import { AppProviders } from "@/components/app-providers";
 import "./globals.css";
 
-const inter = Inter({
+const anaheim = Anaheim({
+  weight: "400",
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-anaheim",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -25,7 +27,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#111111",
+  themeColor: "#1a1209",
 };
 
 export default function RootLayout({
@@ -34,8 +36,8 @@ export default function RootLayout({
   const useDevAuth = process.env.ALLOW_DEV_AUTH === "true";
 
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} antialiased`}>
+    <html lang="en" className={anaheim.variable}>
+      <body className={`${anaheim.className} antialiased`}>
         <AppProviders devAuth={useDevAuth}>{children}</AppProviders>
       </body>
     </html>

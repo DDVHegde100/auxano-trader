@@ -14,13 +14,13 @@ export function DevUserMenu({ email }: { email: string }) {
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#00C853]/20 text-sm font-semibold text-[#00C853]">
+    <div className="flex items-center gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--accent-muted)] px-3 py-2">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent-muted)] text-sm font-normal text-accent">
         {email[0]?.toUpperCase() ?? "T"}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-[#F5F5F5]">Test User</p>
-        <p className="truncate text-xs text-[#B0B0B0]">{email}</p>
+        <p className="truncate text-sm text-foreground">Test User</p>
+        <p className="truncate text-xs text-muted">{email}</p>
       </div>
       <Button
         type="button"

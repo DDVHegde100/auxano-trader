@@ -26,15 +26,24 @@ export async function POST(req: Request) {
     const user = await requireDbUser(req);
     const body = await req.json();
     const logic = (body.logicJson ?? { nodes: [], edges: [] }) as StrategyLogic;
+    const testSymbol =
+      logic.meta?.symbols?.[0] ??
+      (body.symbol as string | undefined) ??
+      "SPY";
 
     const slug = (body.name as string)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
 
+    const quote = await prisma.marketQuote.findUnique({
+      where: { symbol: testSymbol.toUpperCase() },
+    });
+    const basePrice = quote ? Number(quote.price) : 100;
+
     const metrics = runBacktest({
-      symbol: "AAPL",
-      basePrice: 178.5,
+      symbol: testSymbol.toUpperCase(),
+      basePrice,
       days: 252,
       logic,
     });
@@ -50,7 +59,7 @@ export async function POST(req: Request) {
         riskRating: body.riskRating ?? "MEDIUM",
         logicJson: toJsonValue(logic),
         isPublic: body.isPublic ?? true,
-        isPublished: body.isPublished ?? false,
+        isPublished: body.isPublished ?? true,
         historicalReturn: metrics.annualReturn,
         sharpeRatio: metrics.sharpeRatio,
         winRate: metrics.winRate,

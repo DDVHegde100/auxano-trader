@@ -41,13 +41,13 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <p className="text-sm text-[#B0B0B0]">Portfolio Value</p>
+        <p className="text-sm text-[var(--foreground-muted)]">Portfolio Value</p>
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
           {formatCurrency(summary.portfolioValue)}
         </h1>
         <div className="mt-2 flex items-center gap-2">
           {up ? (
-            <TrendingUp className="h-4 w-4 text-[#00C853]" />
+            <TrendingUp className="h-4 w-4 text-[var(--camel)]" />
           ) : (
             <TrendingDown className="h-4 w-4 text-[#FF5252]" />
           )}
@@ -86,10 +86,10 @@ export default function DashboardPage() {
           },
         ].map((stat, i) => (
           <GlassCard key={stat.label} delay={i * 0.05}>
-            <stat.icon className="mb-2 h-4 w-4 text-[#B0B0B0]" />
-            <p className="text-xs text-[#B0B0B0]">{stat.label}</p>
+            <stat.icon className="mb-2 h-4 w-4 text-[var(--foreground-muted)]" />
+            <p className="text-xs text-[var(--foreground-muted)]">{stat.label}</p>
             <p className="text-xl font-semibold">{stat.value}</p>
-            <p className="text-xs text-[#B0B0B0]">{stat.sub}</p>
+            <p className="text-xs text-[var(--foreground-muted)]">{stat.sub}</p>
           </GlassCard>
         ))}
       </div>
@@ -107,7 +107,7 @@ export default function DashboardPage() {
               <div key={a.label}>
                 <div className="mb-1 flex justify-between text-sm">
                   <span>{a.label}</span>
-                  <span className="text-[#B0B0B0]">
+                  <span className="text-[var(--foreground-muted)]">
                     {((a.value / summary.portfolioValue) * 100).toFixed(1)}%
                   </span>
                 </div>
@@ -128,7 +128,7 @@ export default function DashboardPage() {
         <GlassCard delay={0.3}>
           <h2 className="mb-4 text-lg font-semibold">Recent Trades</h2>
           {recentTrades.length === 0 ? (
-            <p className="text-sm text-[#B0B0B0]">No trades yet. Start in Trade.</p>
+            <p className="text-sm text-[var(--foreground-muted)]">No trades yet. Start in Trade.</p>
           ) : (
             <div className="space-y-3">
               {recentTrades.map((t) => (
@@ -148,7 +148,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="text-right text-sm">
                     <p>{t.quantity} @ {formatCurrency(t.price)}</p>
-                    <p className="text-xs text-[#B0B0B0]">
+                    <p className="text-xs text-[var(--foreground-muted)]">
                       {new Date(t.executedAt).toLocaleDateString()}
                     </p>
                   </div>

@@ -1,17 +1,23 @@
 import { prisma, OrderSide } from "@auxano/database";
 import {
   validateOrder,
+  quantityFromNotional,
   computeRealizedPnl,
   computeNewAverageCost,
   decimalToNumber,
 } from "@auxano/shared";
 import { recordPortfolioSnapshot } from "./portfolio";
+import { getOrFetchQuote } from "./market";
+import { assertCanBuySymbol } from "./strategy-trade";
 
 export async function executePaperTrade(params: {
   userId: string;
   symbol: string;
   side: "BUY" | "SELL";
-  quantity: number;
+  quantity?: number;
+  amountUsd?: number;
+  strategyId?: string;
+  presetId?: string;
 }) {
   const account = await prisma.paperAccount.findUnique({
     where: { userId: params.userId },
@@ -19,28 +25,45 @@ export async function executePaperTrade(params: {
   });
   if (!account) throw new Error("Account not found");
 
-  const quote = await prisma.marketQuote.findUnique({
-    where: { symbol: params.symbol.toUpperCase() },
-  });
-  if (!quote) throw new Error("Symbol not found");
+  const symbol = params.symbol.toUpperCase();
 
-  const price = decimalToNumber(quote.price);
+  if (params.side === "BUY") {
+    await assertCanBuySymbol({
+      userId: params.userId,
+      symbol,
+      strategyId: params.strategyId,
+      presetId: params.presetId,
+    });
+  }
+
+  const live = await getOrFetchQuote(symbol);
+  const quote = await prisma.marketQuote.findUnique({ where: { symbol } });
+  if (!live && !quote) throw new Error("Symbol not found — search and select a valid ticker");
+
+  const price = live?.price ?? decimalToNumber(quote!.price);
   const cash = decimalToNumber(account.cashBalance);
-  const existing = account.positions.find(
-    (p) => p.symbol === params.symbol.toUpperCase()
-  );
+  const existing = account.positions.find((p) => p.symbol === symbol);
   const posQty = existing ? decimalToNumber(existing.quantity) : 0;
+
+  let quantity = params.quantity ?? 0;
+  if (params.amountUsd != null) {
+    const fromNotional = quantityFromNotional(params.amountUsd, price, params.side, {
+      cashBalance: cash,
+      positionQuantity: posQty,
+    });
+    if (fromNotional.error) throw new Error(fromNotional.error);
+    quantity = fromNotional.quantity;
+  }
 
   const validation = validateOrder({
     side: params.side,
-    quantity: params.quantity,
+    quantity,
     price,
     cashBalance: cash,
     positionQuantity: posQty,
   });
   if (!validation.valid) throw new Error(validation.error);
 
-  const symbol = params.symbol.toUpperCase();
   const side = params.side as OrderSide;
 
   const order = await prisma.order.create({
@@ -48,7 +71,7 @@ export async function executePaperTrade(params: {
       accountId: account.id,
       symbol,
       side,
-      quantity: params.quantity,
+      quantity,
       status: "FILLED",
       filledPrice: price,
       filledAt: new Date(),
@@ -57,7 +80,7 @@ export async function executePaperTrade(params: {
 
   let realizedPnl = 0;
   if (side === "BUY") {
-    const cost = params.quantity * price;
+    const cost = quantity * price;
     await prisma.paperAccount.update({
       where: { id: account.id },
       data: { cashBalance: cash - cost },
@@ -67,13 +90,13 @@ export async function executePaperTrade(params: {
       const newAvg = computeNewAverageCost(
         posQty,
         decimalToNumber(existing.averageCost),
-        params.quantity,
+        quantity,
         price
       );
       await prisma.position.update({
         where: { id: existing.id },
         data: {
-          quantity: posQty + params.quantity,
+          quantity: posQty + quantity,
           averageCost: newAvg,
         },
       });
@@ -82,15 +105,15 @@ export async function executePaperTrade(params: {
         data: {
           accountId: account.id,
           symbol,
-          quantity: params.quantity,
+          quantity,
           averageCost: price,
         },
       });
     }
   } else {
-    const proceeds = params.quantity * price;
+    const proceeds = quantity * price;
     const avgCost = decimalToNumber(existing!.averageCost);
-    realizedPnl = computeRealizedPnl("SELL", params.quantity, price, avgCost);
+    realizedPnl = computeRealizedPnl("SELL", quantity, price, avgCost);
 
     await prisma.paperAccount.update({
       where: { id: account.id },
@@ -100,7 +123,7 @@ export async function executePaperTrade(params: {
       },
     });
 
-    const remaining = posQty - params.quantity;
+    const remaining = posQty - quantity;
     if (remaining <= 0) {
       await prisma.position.delete({ where: { id: existing!.id } });
     } else {
@@ -117,7 +140,7 @@ export async function executePaperTrade(params: {
       orderId: order.id,
       symbol,
       side,
-      quantity: params.quantity,
+      quantity,
       price,
       realizedPnl,
     },

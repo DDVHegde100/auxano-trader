@@ -25,7 +25,7 @@ export default function BuilderPage() {
       body: JSON.stringify({
         name: meta.name,
         logicJson: logic,
-        symbol: "AAPL",
+        symbol: logic.meta?.symbols?.[0] ?? "SPY",
         days: 252,
       }),
     }).then((r) => r.json());
@@ -50,18 +50,16 @@ export default function BuilderPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold">Strategy Builder</h1>
-        <p className="text-[#B0B0B0]">
-          Visual no-code blocks · stored as JSON · auto-backtested
-        </p>
-      </div>
+    <div className="aux-stack">
+      <header className="aux-section-header">
+        <h1 className="aux-h1">Strategy Builder</h1>
+        <p>Visual blocks or Python · auto-backtested before publish</p>
+      </header>
 
       <GlassCard glow>
         <StrategyBuilder onSave={handleSave} />
         {saving && (
-          <p className="mt-4 text-center text-sm text-[#B0B0B0]">
+          <p className="mt-4 text-center text-sm text-muted">
             Running backtest & saving...
           </p>
         )}
@@ -69,25 +67,25 @@ export default function BuilderPage() {
 
       {backtestResult && (
         <GlassCard>
-          <h3 className="font-semibold">Backtest Preview</h3>
-          <div className="mt-4 grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-[#00C853]">
+          <h3 className="aux-h4">Backtest Preview</h3>
+          <div className="mt-4 aux-grid-3">
+            <div className="aux-stat">
+              <p className="aux-stat-value text-accent">
                 {backtestResult.quantScore?.total ?? 0}
               </p>
-              <p className="text-xs text-[#B0B0B0]">Quant Score</p>
+              <p className="aux-stat-label">Quant Score</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold">
+            <div className="aux-stat aux-stat-positive">
+              <p className="aux-stat-value">
                 {backtestResult.metrics?.annualReturn?.toFixed(1)}%
               </p>
-              <p className="text-xs text-[#B0B0B0]">Annual Return</p>
+              <p className="aux-stat-label">Annual Return</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold">
+            <div className="aux-stat">
+              <p className="aux-stat-value">
                 {backtestResult.metrics?.sharpeRatio?.toFixed(2)}
               </p>
-              <p className="text-xs text-[#B0B0B0]">Sharpe</p>
+              <p className="aux-stat-label">Sharpe</p>
             </div>
           </div>
         </GlassCard>

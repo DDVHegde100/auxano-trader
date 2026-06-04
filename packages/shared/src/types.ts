@@ -18,9 +18,18 @@ export interface StrategyEdge {
   target: string;
 }
 
+export interface StrategyMeta {
+  symbolScope: "universal" | "symbols";
+  symbols: string[];
+  assetTypes: ("STOCK" | "ETF" | "INDEX" | "OPTION" | "FUTURE")[];
+  builderMode: "blocks" | "code";
+  pythonCode?: string;
+}
+
 export interface StrategyLogic {
   nodes: StrategyNode[];
   edges: StrategyEdge[];
+  meta?: StrategyMeta;
 }
 
 export interface EquityPoint {
@@ -116,6 +125,9 @@ export interface MarketplaceStrategy {
   quantScore: number;
   followerCount: number;
   likeCount: number;
+  totalTrades?: number | null;
+  profitFactor?: number | null;
+  symbolScope?: string;
   isFollowing?: boolean;
   isLiked?: boolean;
   isSaved?: boolean;

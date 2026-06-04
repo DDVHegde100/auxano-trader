@@ -154,7 +154,7 @@ export default function DashboardScreen() {
           <PrimaryButton
             label="Trade"
             onPress={() => router.push("/(tabs)/trade")}
-            variant="success"
+            variant="primary"
             style={styles.actionBtn}
           />
           <PrimaryButton

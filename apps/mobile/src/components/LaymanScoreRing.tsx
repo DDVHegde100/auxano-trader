@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { theme } from "@/src/lib/theme";
+import { colors, fontFamily } from "@/src/styles/design-system";
 
 export function LaymanScoreRing({
   score,
@@ -11,7 +11,13 @@ export function LaymanScoreRing({
   size?: "sm" | "md" | "lg";
 }) {
   const color =
-    score >= 85 ? theme.success : score >= 70 ? "#4FC3F7" : score >= 55 ? "#FFB74D" : theme.textSecondary;
+    score >= 85
+      ? colors.lightBronze
+      : score >= 70
+        ? colors.camel
+        : score >= 55
+          ? colors.fadedCopper
+          : colors.textMuted;
 
   const dim = size === "lg" ? 88 : size === "md" ? 64 : 48;
   const fontSize = size === "lg" ? 28 : size === "md" ? 22 : 16;
@@ -27,11 +33,17 @@ export function LaymanScoreRing({
 const styles = StyleSheet.create({
   ring: {
     borderRadius: 999,
-    borderWidth: 3,
+    borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.03)",
+    backgroundColor: "rgba(88, 49, 1, 0.12)",
   },
-  score: { fontWeight: "700" },
-  grade: { fontSize: 9, color: theme.textSecondary, marginTop: 2, textTransform: "uppercase" },
+  score: { fontFamily, fontWeight: "400" },
+  grade: {
+    fontFamily,
+    fontSize: 9,
+    color: colors.textMuted,
+    marginTop: 2,
+    textTransform: "uppercase",
+  },
 });

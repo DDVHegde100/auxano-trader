@@ -192,7 +192,7 @@ export default function StrategyDetailScreen() {
               <PrimaryButton
                 label={data.isFollowing ? "Unfollow" : "Follow"}
                 onPress={follow}
-                variant="success"
+                variant="primary"
                 style={styles.half}
               />
               <PrimaryButton

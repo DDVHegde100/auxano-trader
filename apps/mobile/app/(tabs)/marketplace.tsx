@@ -42,7 +42,6 @@ export default function MarketplaceScreen() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("ALL");
-  const [deployingId, setDeployingId] = useState<string | null>(null);
   const [ratingModal, setRatingModal] = useState<LaymanDetail | null>(null);
   const [msg, setMsg] = useState("");
 
@@ -67,26 +66,12 @@ export default function MarketplaceScreen() {
     load().finally(() => setLoading(false));
   }, [load]);
 
-  async function deployPreset(preset: PresetPreview) {
-    setDeployingId(preset.id);
-    setMsg("");
-    const token = await getToken();
-    try {
-      const res = await apiFetch<{
-        layman: LaymanDetail;
-        strategy: { slug: string; name: string };
-      }>("/api/algorithms/deploy", {
-        method: "POST",
-        token: token ?? undefined,
-        body: JSON.stringify({ presetId: preset.id, allocated: 20000 }),
-      });
-      setMsg(`✓ ${res.strategy.name} deployed · Strength ${res.layman.score}/100`);
-      setRatingModal(res.layman);
-    } catch (e) {
-      setMsg(e instanceof Error ? e.message : "Deploy failed");
-    } finally {
-      setDeployingId(null);
-    }
+  function addPresetToTrading(preset: PresetPreview) {
+    setMsg(`${preset.name} added — choose an allowed symbol in Trade.`);
+    router.push({
+      pathname: "/(tabs)/trade",
+      params: { preset: preset.id },
+    });
   }
 
   async function toggleFollow(slug: string) {
@@ -132,8 +117,8 @@ export default function MarketplaceScreen() {
         {msg ? <Text style={styles.msg}>{msg}</Text> : null}
 
         <SectionHeader
-          title="Starter algorithms"
-          subtitle="No coding — tap Deploy to run on your paper account"
+          title="Built-in · DEFAULT"
+          subtitle="1-year backtests · tap to add to paper trading (no source code)"
         />
 
         {loading ? (
@@ -143,8 +128,7 @@ export default function MarketplaceScreen() {
             <PresetAlgoCard
               key={p.id}
               preset={p}
-              deploying={deployingId === p.id}
-              onDeploy={() => deployPreset(p)}
+              onDeploy={() => addPresetToTrading(p)}
               onRate={() => openPresetRating(p, setRatingModal)}
             />
           ))
@@ -186,7 +170,7 @@ export default function MarketplaceScreen() {
                 <PrimaryButton
                   label="Details"
                   onPress={() => router.push(`/strategy/${s.slug}`)}
-                  variant="success"
+                  variant="primary"
                   style={styles.smallBtn}
                 />
               </View>
@@ -271,7 +255,7 @@ const styles = StyleSheet.create({
     borderColor: theme.border,
     marginRight: 8,
   },
-  filterOn: { backgroundColor: "rgba(0,200,83,0.12)", borderColor: theme.success },
+  filterOn: { backgroundColor: "rgba(188,138,95,0.12)", borderColor: theme.success },
   filterText: { color: theme.textSecondary, fontSize: 12 },
   filterOnText: { color: theme.success, fontWeight: "600", fontSize: 12 },
   msg: { color: theme.success, marginBottom: 12, textAlign: "center" },

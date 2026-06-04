@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { theme } from "@/src/lib/theme";
+import { pageHeader } from "@/src/styles/components";
+import { colors, fontFamily } from "@/src/styles/design-system";
 
 export function SectionHeader({
   title,
@@ -13,32 +14,28 @@ export function SectionHeader({
   onAction?: () => void;
 }) {
   return (
-    <View style={styles.row}>
-      <View style={styles.flex}>
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.sub}>{subtitle}</Text> : null}
+    <View style={pageHeader.wrap}>
+      <View style={styles.row}>
+        <View style={styles.flex}>
+          <Text style={pageHeader.title}>{title}</Text>
+          {subtitle ? <Text style={pageHeader.subtitle}>{subtitle}</Text> : null}
+        </View>
+        {actionLabel && onAction ? (
+          <Pressable onPress={onAction} hitSlop={8}>
+            <Text style={styles.action}>{actionLabel}</Text>
+          </Pressable>
+        ) : null}
       </View>
-      {actionLabel && onAction ? (
-        <Pressable onPress={onAction} style={styles.action}>
-          <Text style={styles.actionText}>{actionLabel}</Text>
-        </Pressable>
-      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", marginBottom: 12, marginTop: 8 },
+  row: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
   flex: { flex: 1 },
-  title: { fontSize: 18, fontWeight: "600", color: theme.textPrimary },
-  sub: { fontSize: 13, color: theme.textSecondary, marginTop: 2 },
   action: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: theme.border,
-    backgroundColor: "rgba(255,255,255,0.04)",
+    fontFamily,
+    fontSize: 13,
+    color: colors.accent,
   },
-  actionText: { color: theme.success, fontSize: 13, fontWeight: "600" },
 });

@@ -19,49 +19,45 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#111111]"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--background)]"
       animate={{ opacity: phase === 2 ? 0 : 1 }}
       transition={{ duration: 0.6 }}
     >
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="text-center"
       >
         <motion.div
-          className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-2xl shadow-[0_0_60px_rgba(199,199,199,0.15)]"
+          className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-[var(--border-strong)] bg-[var(--accent-muted)] shadow-[var(--shadow-glow)]"
           animate={{
             boxShadow: [
-              "0 0 40px rgba(0,200,83,0.1)",
-              "0 0 80px rgba(0,200,83,0.25)",
-              "0 0 40px rgba(0,200,83,0.1)",
+              "0 0 40px rgba(111, 69, 24, 0.15)",
+              "0 0 64px rgba(188, 138, 95, 0.25)",
+              "0 0 40px rgba(111, 69, 24, 0.15)",
             ],
           }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <span className="text-3xl font-bold tracking-tighter text-[#F5F5F5]">
-            A
-          </span>
+          <span className="text-3xl tracking-tight text-foreground">A</span>
         </motion.div>
-        <h1 className="text-4xl font-semibold tracking-tight text-[#F5F5F5]">
-          Auxano
-        </h1>
+        <h1 className="aux-h1 text-foreground">Auxano</h1>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: phase >= 1 ? 1 : 0 }}
-          className="mt-2 text-[#B0B0B0]"
+          className="mt-2 text-muted"
         >
           Grow intelligently
         </motion.p>
       </motion.div>
       <motion.div
-        className="absolute bottom-16 h-1 w-32 overflow-hidden rounded-full bg-white/[0.06]"
+        className="absolute bottom-16 h-1 w-32 overflow-hidden rounded-full bg-[var(--border-subtle)]"
         initial={{ opacity: 0 }}
         animate={{ opacity: phase >= 1 ? 1 : 0 }}
       >
         <motion.div
-          className="h-full bg-[#00C853]"
+          className="h-full bg-[var(--camel)]"
           initial={{ width: "0%" }}
           animate={{ width: "100%" }}
           transition={{ duration: 1.4, ease: "easeInOut" }}

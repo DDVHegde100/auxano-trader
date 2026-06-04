@@ -1,16 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 import { SignIn } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const DEV_MODE = process.env.NEXT_PUBLIC_ALLOW_DEV_AUTH === "true";
 
-export default function SignInPage() {
+function SignInContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const setupError = searchParams.get("error");
   const [email, setEmail] = useState("test@gmail.com");
   const [password, setPassword] = useState("Test1234!");
   const [error, setError] = useState<string | null>(null);
@@ -41,25 +44,32 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#111111] px-4">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,200,83,0.12),transparent_55%)]" />
-      <div className="relative w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] px-[var(--page-padding-x)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(188,138,95,0.1),transparent_55%)]" />
+      <div className="relative w-full max-w-md aux-fade-in">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04] text-2xl font-bold backdrop-blur-2xl">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--border-strong)] bg-[var(--accent-muted)] text-2xl text-accent">
             A
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-          <p className="mt-1 text-[#B0B0B0]">Continue your growth journey</p>
+          <h1 className="aux-h2">Welcome back</h1>
+          <p className="mt-1 text-muted">Continue your growth journey</p>
         </div>
 
+        {setupError === "database" && (
+          <p className="mb-4 rounded-xl border border-[var(--border-strong)] bg-[var(--accent-muted)] px-4 py-3 text-center text-sm text-negative">
+            Database unreachable. Run <code className="text-foreground">npm run db:setup</code> or
+            fix Supabase in SETUP.md.
+          </p>
+        )}
+        {setupError === "account" && (
+          <p className="mb-4 text-center text-sm text-negative">
+            Could not create your paper account. Try signing in again.
+          </p>
+        )}
+
         {DEV_MODE ? (
-          <form
-            onSubmit={devSignIn}
-            className="glass space-y-4 rounded-2xl p-6 shadow-2xl"
-          >
-            <p className="text-center text-xs text-[#B0B0B0]">
-              Local dev · paper trading only
-            </p>
+          <form onSubmit={devSignIn} className="aux-card space-y-4">
+            <p className="text-center aux-caption">Local dev · paper trading only</p>
             <Input
               type="email"
               value={email}
@@ -75,37 +85,49 @@ export default function SignInPage() {
               autoComplete="current-password"
             />
             {error && (
-              <p className="text-center text-sm text-[#FF5252]">{error}</p>
+              <p className="text-center text-sm text-negative">{error}</p>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing in…" : "Sign in"}
             </Button>
-            <p className="text-center text-xs text-[#B0B0B0]">
-              <Link href="/" className="text-[#00C853] hover:underline">
+            <p className="text-center aux-caption">
+              <Link href="/" className="text-accent hover:underline">
                 Back to home
               </Link>
             </p>
           </form>
         ) : (
           <SignIn
+            routing="path"
+            path="/sign-in"
+            signUpUrl="/sign-up"
+            forceRedirectUrl="/dashboard"
             appearance={{
               variables: {
-                colorBackground: "#1A1A1A",
-                colorInputBackground: "rgba(255,255,255,0.04)",
-                colorInputText: "#F5F5F5",
-                colorText: "#F5F5F5",
-                colorTextSecondary: "#B0B0B0",
-                colorPrimary: "#00C853",
+                colorBackground: "#2a1a0e",
+                colorInputBackground: "rgba(26, 18, 9, 0.6)",
+                colorInputText: "#ffedd8",
+                colorText: "#ffedd8",
+                colorTextSecondary: "#e7bc91",
+                colorPrimary: "#bc8a5f",
                 borderRadius: "12px",
               },
               elements: {
-                card: "bg-white/[0.04] border border-white/[0.08] backdrop-blur-2xl shadow-2xl",
-                formButtonPrimary: "bg-[#F5F5F5] text-[#111111] hover:bg-white",
+                card: "aux-card shadow-[var(--shadow-lg)]",
+                formButtonPrimary: "aux-btn-primary",
               },
             }}
           />
         )}
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInContent />
+    </Suspense>
   );
 }

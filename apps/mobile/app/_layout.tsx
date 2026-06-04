@@ -3,9 +3,11 @@ import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
+import { View } from "react-native";
+import { useFonts, Anaheim_400Regular } from "@expo-google-fonts/anaheim";
 import { DevAuthProvider } from "@/src/context/DevAuthContext";
-import { theme } from "@/src/lib/theme";
+import { colors } from "@/src/styles/design-system";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -19,7 +21,7 @@ function AppStack() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: theme.background },
+          contentStyle: { backgroundColor: colors.background },
           animation: "fade",
         }}
       >
@@ -34,23 +36,35 @@ function AppStack() {
 }
 
 export default function RootLayout() {
-  useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+  const [fontsLoaded] = useFonts({ Anaheim_400Regular });
 
-  if (USE_DEV_AUTH) {
-    return (
-      <DevAuthProvider>
-        <AppStack />
-      </DevAuthProvider>
-    );
+  const onLayout = useCallback(async () => {
+    if (fontsLoaded) await SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return <View style={{ flex: 1, backgroundColor: colors.background }} />;
   }
 
-  return (
+  const content = USE_DEV_AUTH ? (
+    <DevAuthProvider>
+      <AppStack />
+    </DevAuthProvider>
+  ) : (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <ClerkLoaded>
         <AppStack />
       </ClerkLoaded>
     </ClerkProvider>
+  );
+
+  return (
+    <View style={{ flex: 1 }} onLayout={onLayout}>
+      {content}
+    </View>
   );
 }

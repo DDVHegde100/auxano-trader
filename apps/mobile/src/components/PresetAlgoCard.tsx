@@ -8,7 +8,6 @@ import { formatPct } from "@/src/lib/format";
 export interface PresetPreview {
   id: string;
   name: string;
-  emoji: string;
   tagline: string;
   difficulty: string;
   description: string;
@@ -38,10 +37,9 @@ export function PresetAlgoCard({
   return (
     <GlassCard style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.emoji}>{preset.emoji}</Text>
         <View style={styles.meta}>
           <Text style={styles.name}>{preset.name}</Text>
-          <Text style={styles.tag}>{preset.tagline}</Text>
+          <Text style={styles.tag}>DEFAULT · {preset.tagline}</Text>
           <View style={styles.badgeRow}>
             <Text style={styles.badge}>{preset.difficulty}</Text>
             <Text style={styles.badgeMuted}>
@@ -69,9 +67,9 @@ export function PresetAlgoCard({
 
       <View style={styles.actions}>
         <PrimaryButton
-          label={deploying ? "Deploying…" : "Deploy to paper account"}
+          label={deploying ? "…" : "Add to trading"}
           onPress={onDeploy}
-          variant="success"
+          variant="primary"
           loading={deploying}
           style={styles.btn}
         />
@@ -93,7 +91,6 @@ function Stat({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   card: { marginBottom: 16 },
   header: { flexDirection: "row", gap: 12, marginBottom: 12 },
-  emoji: { fontSize: 32 },
   meta: { flex: 1 },
   name: { fontSize: 18, fontWeight: "700", color: theme.textPrimary },
   tag: { color: theme.textSecondary, fontSize: 13 },
@@ -101,7 +98,7 @@ const styles = StyleSheet.create({
   badge: {
     fontSize: 11,
     color: theme.success,
-    backgroundColor: "rgba(0,200,83,0.12)",
+    backgroundColor: "rgba(188,138,95,0.12)",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 8,

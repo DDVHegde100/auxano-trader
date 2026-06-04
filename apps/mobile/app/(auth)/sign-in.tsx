@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   devBadge: {
-    backgroundColor: "rgba(0,200,83,0.12)",
+    backgroundColor: "rgba(188,138,95,0.12)",
     borderRadius: 8,
     padding: 8,
     marginBottom: 16,

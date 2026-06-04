@@ -58,7 +58,7 @@ export default function StrategyDetailPage() {
         <QuantScoreBadge score={data.quantScore as number} size="lg" />
         <div className="flex-1">
           <h1 className="text-3xl font-semibold">{data.name as string}</h1>
-          <p className="text-[#B0B0B0]">
+          <p className="text-[var(--foreground-muted)]">
             by {(data.creator as { name: string }).name} · {data.category as string}
           </p>
           <div className="mt-4 flex gap-2">
@@ -82,8 +82,8 @@ export default function StrategyDetailPage() {
             onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm capitalize ${
               tab === t
-                ? "border-b-2 border-[#00C853] text-[#F5F5F5]"
-                : "text-[#B0B0B0]"
+                ? "border-b-2 border-[var(--camel)] text-[var(--foreground)]"
+                : "text-[var(--foreground-muted)]"
             }`}
           >
             {t}
@@ -93,7 +93,7 @@ export default function StrategyDetailPage() {
 
       {tab === "overview" && (
         <GlassCard>
-          <p className="leading-relaxed text-[#B0B0B0]">{data.description as string}</p>
+          <p className="leading-relaxed text-[var(--foreground-muted)]">{data.description as string}</p>
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
               { l: "Return", v: formatPercent(data.historicalReturn as number) },
@@ -103,7 +103,7 @@ export default function StrategyDetailPage() {
             ].map((m) => (
               <div key={m.l} className="rounded-xl bg-white/[0.04] p-3 text-center">
                 <p className="text-lg font-semibold">{m.v}</p>
-                <p className="text-xs text-[#B0B0B0]">{m.l}</p>
+                <p className="text-xs text-[var(--foreground-muted)]">{m.l}</p>
               </div>
             ))}
           </div>
@@ -144,7 +144,7 @@ export default function StrategyDetailPage() {
             )?.map((c) => (
               <div key={c.id} className="border-b border-white/[0.06] pb-3">
                 <p className="text-sm font-medium">{c.user.name}</p>
-                <p className="text-[#B0B0B0]">{c.content}</p>
+                <p className="text-[var(--foreground-muted)]">{c.content}</p>
               </div>
             ))}
           </div>

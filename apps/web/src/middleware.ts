@@ -10,10 +10,12 @@ const isPublicRoute = createRouteMatcher([
   "/api/market/quotes",
   "/api/market/live",
   "/api/market/(.*)",
+  "/api/market/search",
   "/api/algorithms/presets",
   "/api/algorithms/rate",
   "/api/algorithms/presets/(.*)",
   "/api/auth/dev-login",
+  "/api/webhooks/clerk",
 ]);
 
 const clerk = clerkMiddleware(async (auth, req) => {

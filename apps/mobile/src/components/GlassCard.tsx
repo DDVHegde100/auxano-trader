@@ -1,5 +1,5 @@
-import { View, StyleSheet, ViewStyle } from "react-native";
-import { theme } from "@/src/lib/theme";
+import { View, StyleSheet, type ViewStyle } from "react-native";
+import { cards } from "@/src/styles/design-system";
 
 export function GlassCard({
   children,
@@ -11,24 +11,6 @@ export function GlassCard({
   glow?: boolean;
 }) {
   return (
-    <View style={[styles.card, glow && styles.glow, style]}>{children}</View>
+    <View style={[glow ? cards.glow : cards.elevated, style]}>{children}</View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.border,
-    padding: 16,
-    marginBottom: 12,
-  },
-  glow: {
-    shadowColor: "#C7C7C7",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    elevation: 4,
-  },
-});

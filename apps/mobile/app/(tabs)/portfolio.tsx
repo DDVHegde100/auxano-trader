@@ -167,7 +167,7 @@ export default function PortfolioScreen() {
             <PrimaryButton
               label="Start trading"
               onPress={() => router.push("/(tabs)/trade")}
-              variant="success"
+              variant="primary"
             />
           </GlassCard>
         ) : (

@@ -1,73 +1,91 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { theme } from "@/src/lib/theme";
+import { colors, fontFamily, movementColor } from "@/src/styles/design-system";
 import { formatUsd, formatPct } from "@/src/lib/format";
-import { MiniChart } from "./MiniChart";
 
-export interface StockQuoteRow {
+export function StockRow({
+  symbol,
+  name,
+  price,
+  changePct,
+  onPress,
+  selected,
+}: {
   symbol: string;
   name: string;
   price: number;
   changePct: number;
-  sparkline?: number[];
-}
-
-export function StockRow({
-  quote,
-  selected,
-  onPress,
-  showChart,
-}: {
-  quote: StockQuoteRow;
+  onPress?: () => void;
   selected?: boolean;
-  onPress: () => void;
-  showChart?: boolean;
 }) {
-  const up = quote.changePct >= 0;
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.row, selected && styles.selected]}
-    >
-      <View style={styles.left}>
-        <Text style={styles.sym}>{quote.symbol}</Text>
-        <Text style={styles.name} numberOfLines={1}>{quote.name}</Text>
-      </View>
-      {showChart && quote.sparkline ? (
-        <View style={styles.chart}>
-          <MiniChart data={quote.sparkline} height={36} positive={up} />
-        </View>
-      ) : null}
-      <View style={styles.right}>
-        <Text style={styles.price}>{formatUsd(quote.price)}</Text>
-        <Text style={[styles.chg, { color: up ? theme.success : theme.loss }]}>
-          {formatPct(quote.changePct)}
+  const up = changePct >= 0;
+  const content = (
+    <View style={[styles.row, selected && styles.selected]}>
+      <View>
+        <Text style={styles.sym}>{symbol}</Text>
+        <Text style={styles.name} numberOfLines={1}>
+          {name}
         </Text>
       </View>
-    </Pressable>
+      <View style={styles.right}>
+        <Text style={styles.price}>{formatUsd(price)}</Text>
+        <Text style={[styles.chg, { color: movementColor(changePct) }]}>
+          {formatPct(changePct)}
+        </Text>
+      </View>
+    </View>
   );
+
+  if (onPress) {
+    return (
+      <Pressable onPress={onPress} style={({ pressed }) => pressed && styles.pressed}>
+        {content}
+      </Pressable>
+    );
+  }
+  return content;
 }
 
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    marginBottom: 6,
-    borderWidth: 1,
-    borderColor: "transparent",
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(255, 237, 216, 0.06)",
   },
   selected: {
-    borderColor: "rgba(0,200,83,0.35)",
-    backgroundColor: "rgba(0,200,83,0.08)",
+    backgroundColor: colors.accentMuted,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    borderBottomWidth: 0,
   },
-  left: { width: 72 },
-  sym: { fontWeight: "700", color: theme.textPrimary, fontSize: 15 },
-  name: { fontSize: 11, color: theme.textSecondary, maxWidth: 72 },
-  chart: { flex: 1, marginHorizontal: 8 },
-  right: { alignItems: "flex-end", minWidth: 80 },
-  price: { color: theme.textPrimary, fontWeight: "600", fontSize: 14 },
-  chg: { fontSize: 12, marginTop: 2 },
+  pressed: { opacity: 0.85 },
+  sym: {
+    fontFamily,
+    fontSize: 16,
+    color: colors.text,
+    fontVariant: ["tabular-nums"],
+  },
+  name: {
+    fontFamily,
+    fontSize: 12,
+    color: colors.textMuted,
+    maxWidth: 160,
+    marginTop: 2,
+  },
+  right: { alignItems: "flex-end" },
+  price: {
+    fontFamily,
+    fontSize: 15,
+    color: colors.text,
+    fontVariant: ["tabular-nums"],
+  },
+  chg: {
+    fontFamily,
+    fontSize: 12,
+    marginTop: 2,
+    fontVariant: ["tabular-nums"],
+  },
 });

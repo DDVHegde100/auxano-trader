@@ -28,7 +28,7 @@ export default function PortfolioPage() {
       <div>
         <h1 className="text-3xl font-semibold">Portfolio</h1>
         {summary && (
-          <p className="text-[#B0B0B0]">
+          <p className="text-[var(--foreground-muted)]">
             {formatCurrency(summary.portfolioValue)} total ·{" "}
             <span className={summary.unrealizedPnl >= 0 ? "text-gain" : "text-loss"}>
               {formatCurrency(summary.unrealizedPnl)} unrealized
@@ -40,7 +40,7 @@ export default function PortfolioPage() {
       <GlassCard>
         <h2 className="mb-4 font-semibold">Positions</h2>
         {positions.length === 0 ? (
-          <p className="text-[#B0B0B0]">No open positions. Trade to get started.</p>
+          <p className="text-[var(--foreground-muted)]">No open positions. Trade to get started.</p>
         ) : (
           <div className="space-y-4">
             {positions.map((p) => (
@@ -50,8 +50,8 @@ export default function PortfolioPage() {
               >
                 <div>
                   <p className="font-semibold">{p.symbol}</p>
-                  <p className="text-xs text-[#B0B0B0]">{p.name}</p>
-                  <p className="text-xs text-[#B0B0B0]">
+                  <p className="text-xs text-[var(--foreground-muted)]">{p.name}</p>
+                  <p className="text-xs text-[var(--foreground-muted)]">
                     {p.quantity} shares @ {formatCurrency(p.averageCost)}
                   </p>
                 </div>
@@ -60,7 +60,7 @@ export default function PortfolioPage() {
                   <p className={p.unrealizedPnl >= 0 ? "text-gain text-sm" : "text-loss text-sm"}>
                     {formatCurrency(p.unrealizedPnl)} ({formatPercent(p.unrealizedPnlPct)})
                   </p>
-                  <p className="text-xs text-[#B0B0B0]">{p.weight.toFixed(1)}% weight</p>
+                  <p className="text-xs text-[var(--foreground-muted)]">{p.weight.toFixed(1)}% weight</p>
                 </div>
               </div>
             ))}

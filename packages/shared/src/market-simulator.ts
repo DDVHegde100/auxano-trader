@@ -1,12 +1,20 @@
 /** Deterministic pseudo-random price movement for paper trading & backtests */
 
-function hashSymbol(symbol: string, seed: number): number {
-  let h = seed;
+export function hashSymbolForSim(symbol: string, seed: number): number {
+  let h = Math.imul(seed, 2654435761) >>> 0;
   for (let i = 0; i < symbol.length; i++) {
-    h = (h << 5) - h + symbol.charCodeAt(i);
-    h |= 0;
+    h = Math.imul(h ^ symbol.charCodeAt(i), 2246822507) >>> 0;
   }
-  return Math.abs(h) / 2147483647;
+  return h / 4294967296;
+}
+
+/** Per-symbol drift & volatility for realistic 1Y backtests */
+function symbolRegime(symbol: string) {
+  const h = hashSymbolForSim(symbol, 0);
+  const drift = 0.00035 + h * 0.00025;
+  const vol = 0.012 + hashSymbolForSim(symbol, 7) * 0.008;
+  const cycle = 40 + Math.floor(hashSymbolForSim(symbol, 3) * 30);
+  return { drift, vol, cycle };
 }
 
 export function getSimulatedPrice(
@@ -14,9 +22,10 @@ export function getSimulatedPrice(
   basePrice: number,
   dayOffset = 0
 ): number {
-  const noise = hashSymbol(symbol, dayOffset);
-  const trend = Math.sin(dayOffset * 0.05 + hashSymbol(symbol, 0) * 10) * 0.02;
-  const daily = (noise - 0.5) * 0.04 + trend;
+  const { drift, vol, cycle } = symbolRegime(symbol);
+  const noise = (hashSymbolForSim(symbol, dayOffset) - 0.5) * 2;
+  const cyclical = Math.sin((dayOffset / cycle) * Math.PI * 2) * 0.004;
+  const daily = drift + cyclical + noise * vol;
   return Math.max(0.01, basePrice * (1 + daily));
 }
 
@@ -41,8 +50,8 @@ export function generatePriceSeries(
     d.setDate(d.getDate() + i);
     const close = getSimulatedPrice(symbol, price, i);
     const open = price;
-    const high = Math.max(open, close) * (1 + hashSymbol(symbol, i + 1) * 0.01);
-    const low = Math.min(open, close) * (1 - hashSymbol(symbol, i + 2) * 0.01);
+    const high = Math.max(open, close) * (1 + hashSymbolForSim(symbol, i + 1) * 0.008);
+    const low = Math.min(open, close) * (1 - hashSymbolForSim(symbol, i + 2) * 0.008);
     series.push({
       date: d.toISOString().split("T")[0],
       open,

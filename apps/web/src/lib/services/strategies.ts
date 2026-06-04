@@ -30,7 +30,13 @@ export async function listMarketplaceStrategies(params: {
   }
 
   const strategies = await prisma.strategy.findMany({
-    where,
+    where: {
+      ...where,
+      creator: {
+        username: { not: "alexchen" },
+      },
+      slug: { not: { startsWith: "default-" } },
+    },
     include: {
       creator: {
         select: { id: true, name: true, username: true, avatarUrl: true },

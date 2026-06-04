@@ -1,5 +1,12 @@
-import { Pressable, Text, StyleSheet, ActivityIndicator, ViewStyle } from "react-native";
-import { theme } from "@/src/lib/theme";
+import {
+  Pressable,
+  Text,
+  ActivityIndicator,
+  ViewStyle,
+  StyleSheet,
+} from "react-native";
+import { buttons } from "@/src/styles/design-system";
+import { colors } from "@/src/styles/design-system";
 
 export function PrimaryButton({
   label,
@@ -11,45 +18,53 @@ export function PrimaryButton({
 }: {
   label: string;
   onPress: () => void;
-  variant?: "primary" | "success" | "danger" | "ghost";
+  variant?: "primary" | "secondary" | "danger" | "ghost" | "accent";
   loading?: boolean;
   disabled?: boolean;
   style?: ViewStyle;
 }) {
-  const bg =
-    variant === "success"
-      ? "rgba(0,200,83,0.25)"
+  const btnStyle =
+    variant === "secondary"
+      ? buttons.secondary
       : variant === "danger"
-        ? "rgba(255,82,82,0.25)"
+        ? buttons.danger
         : variant === "ghost"
-          ? "transparent"
-          : theme.textPrimary;
+          ? buttons.ghost
+          : buttons.primary;
 
-  const textColor =
-    variant === "primary" ? theme.background : variant === "ghost" ? theme.textSecondary : theme.textPrimary;
+  const textStyle =
+    variant === "secondary"
+      ? buttons.secondaryText
+      : variant === "danger"
+        ? buttons.dangerText
+        : variant === "ghost"
+          ? buttons.ghostText
+          : buttons.primaryText;
+
+  const spinnerColor =
+    variant === "primary" ? colors.antiqueWhite : colors.text;
 
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled || loading}
       style={({ pressed }) => [
-        styles.btn,
-        { backgroundColor: bg, opacity: pressed ? 0.85 : disabled ? 0.5 : 1 },
-        variant === "ghost" && styles.ghost,
+        btnStyle,
+        pressed && styles.pressed,
+        disabled && styles.disabled,
         style,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={textColor} />
+        <ActivityIndicator color={spinnerColor} />
       ) : (
-        <Text style={[styles.text, { color: textColor }]}>{label}</Text>
+        <Text style={textStyle}>{label}</Text>
       )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  btn: { paddingVertical: 14, paddingHorizontal: 20, borderRadius: 14, alignItems: "center" },
-  ghost: { borderWidth: 1, borderColor: theme.border },
-  text: { fontWeight: "600", fontSize: 15 },
+  pressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
+  disabled: { opacity: 0.45 },
 });

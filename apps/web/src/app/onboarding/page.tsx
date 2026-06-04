@@ -57,13 +57,13 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#111111] px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--background)] px-4">
       <div className="mb-8 flex gap-2">
         {STEPS.map((_, i) => (
           <div
             key={i}
             className={`h-1 w-12 rounded-full transition-colors ${
-              i <= step ? "bg-[#00C853]" : "bg-white/[0.08]"
+              i <= step ? "bg-[var(--camel)]" : "bg-white/[0.08]"
             }`}
           />
         ))}
@@ -80,7 +80,7 @@ export default function OnboardingPage() {
           {current === "profile" && (
             <GlassCard glow>
               <h2 className="text-2xl font-semibold">Let&apos;s get to know you</h2>
-              <p className="mt-2 text-[#B0B0B0]">Your investing identity starts here</p>
+              <p className="mt-2 text-[var(--foreground-muted)]">Your investing identity starts here</p>
               <div className="mt-6 space-y-4">
                 <Input
                   placeholder="Full name"
@@ -116,12 +116,12 @@ export default function OnboardingPage() {
                     }
                     className={`rounded-xl border p-4 text-left transition-all ${
                       form.investingExperience === e.value
-                        ? "border-[#00C853]/50 bg-[#00C853]/10"
+                        ? "border-[var(--camel)]/50 bg-[var(--camel)]/10"
                         : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06]"
                     }`}
                   >
                     <p className="font-medium">{e.label}</p>
-                    <p className="text-sm text-[#B0B0B0]">{e.desc}</p>
+                    <p className="text-sm text-[var(--foreground-muted)]">{e.desc}</p>
                   </button>
                 ))}
               </div>
@@ -138,7 +138,7 @@ export default function OnboardingPage() {
           {current === "goals" && (
             <GlassCard glow>
               <h2 className="text-2xl font-semibold">Risk & goals</h2>
-              <p className="mt-2 text-sm text-[#B0B0B0]">Risk tolerance</p>
+              <p className="mt-2 text-sm text-[var(--foreground-muted)]">Risk tolerance</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {RISK.map((r) => (
                   <button
@@ -147,7 +147,7 @@ export default function OnboardingPage() {
                     onClick={() => setForm({ ...form, riskTolerance: r.value })}
                     className={`rounded-lg border px-4 py-2 text-sm ${
                       form.riskTolerance === r.value
-                        ? "border-[#00C853]/50 bg-[#00C853]/10"
+                        ? "border-[var(--camel)]/50 bg-[var(--camel)]/10"
                         : "border-white/[0.08]"
                     }`}
                   >
@@ -155,7 +155,7 @@ export default function OnboardingPage() {
                   </button>
                 ))}
               </div>
-              <p className="mt-6 text-sm text-[#B0B0B0]">Financial goal</p>
+              <p className="mt-6 text-sm text-[var(--foreground-muted)]">Financial goal</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {GOALS.map((g) => (
                   <button
@@ -164,7 +164,7 @@ export default function OnboardingPage() {
                     onClick={() => setForm({ ...form, financialGoal: g.value })}
                     className={`rounded-lg border px-4 py-2 text-sm ${
                       form.financialGoal === g.value
-                        ? "border-[#00C853]/50 bg-[#00C853]/10"
+                        ? "border-[var(--camel)]/50 bg-[var(--camel)]/10"
                         : "border-white/[0.08]"
                     }`}
                   >
@@ -187,16 +187,16 @@ export default function OnboardingPage() {
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#00C853]/20 text-3xl"
+                className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--camel)]/20 text-3xl"
               >
                 ✓
               </motion.div>
               <h2 className="text-3xl font-semibold">
                 Welcome, {form.name.split(" ")[0]}
               </h2>
-              <p className="mt-3 text-[#B0B0B0]">
+              <p className="mt-3 text-[var(--foreground-muted)]">
                 Your paper trading account is funded with{" "}
-                <span className="text-[#00C853] font-semibold">$100,000</span>{" "}
+                <span className="text-[var(--camel)] font-semibold">$100,000</span>{" "}
                 virtual capital.
               </p>
               <Button

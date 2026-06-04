@@ -76,7 +76,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     ...positions.map((p, i) => ({
       label: p.symbol,
       value: p.marketValue,
-      color: ["#00C853", "#4FC3F7", "#FFB74D", "#BA68C8", "#FF5252"][i % 5],
+      color: ["#d4a276", "#bc8a5f", "#a47148", "#8b5e34", "#e7bc91"][i % 5],
     })),
   ].filter((a) => a.value > 0);
 
