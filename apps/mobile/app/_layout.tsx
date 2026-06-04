@@ -8,6 +8,8 @@ import { View } from "react-native";
 import { useFonts, Anaheim_400Regular } from "@expo-google-fonts/anaheim";
 import { DevAuthProvider } from "@/src/context/DevAuthContext";
 import { colors } from "@/src/styles/design-system";
+import { registerForPushNotifications } from "@/src/lib/push-notifications";
+import { useAuth } from "@clerk/clerk-expo";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -30,9 +32,22 @@ function AppStack() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="strategy/[slug]" />
+        <Stack.Screen name="notifications" />
       </Stack>
     </>
   );
+}
+
+function PushRegistration() {
+  const auth = useAuth();
+  useEffect(() => {
+    if (USE_DEV_AUTH) return;
+    const t = setTimeout(() => {
+      registerForPushNotifications(() => auth.getToken()).catch(() => {});
+    }, 2000);
+    return () => clearTimeout(t);
+  }, [auth]);
+  return null;
 }
 
 export default function RootLayout() {
@@ -57,6 +72,7 @@ export default function RootLayout() {
   ) : (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <ClerkLoaded>
+        <PushRegistration />
         <AppStack />
       </ClerkLoaded>
     </ClerkProvider>

@@ -20,6 +20,7 @@ import { theme } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { formatUsd, formatPct, formatTime } from "@/src/lib/format";
 import { usePolling } from "@/src/hooks/usePolling";
+import { NotificationBell } from "@/src/components/NotificationBell";
 import type { DashboardData } from "@auxano/shared";
 
 interface LiveQuote {
@@ -113,11 +114,14 @@ export default function DashboardScreen() {
             <Text style={styles.brand}>Auxano</Text>
             <Text style={styles.live}>Live · updated {lastRefresh}</Text>
           </View>
-          <LaymanScoreRing
+          <View style={styles.topBarRight}>
+            <NotificationBell />
+            <LaymanScoreRing
             score={Math.min(100, Math.round((s?.totalReturnPct ?? 0) + 50))}
             grade="You"
             size="sm"
           />
+          </View>
         </View>
 
         <GlassCard glow style={styles.heroCard}>
@@ -268,6 +272,7 @@ const styles = StyleSheet.create({
   loadingText: { color: theme.textSecondary, marginTop: 16 },
   scroll: { padding: 20, paddingBottom: 48 },
   topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
+  topBarRight: { flexDirection: "row", alignItems: "center", gap: 10 },
   brand: { fontSize: 13, color: theme.textSecondary, letterSpacing: 2, textTransform: "uppercase" },
   live: { fontSize: 11, color: theme.success, marginTop: 2 },
   heroCard: { marginBottom: 16 },

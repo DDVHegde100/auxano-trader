@@ -9,6 +9,8 @@ import {
 import { recordPortfolioSnapshot } from "./portfolio";
 import { getOrFetchQuote } from "./market";
 import { refreshLeaderboardQuotes } from "./leaderboard";
+import { getTraderRank, notifyLeaderboardPassesAfterTrade } from "./leaderboard-ranks";
+import { notifyTradeFill } from "./notifications";
 import { assertCanBuySymbol } from "./strategy-trade";
 
 export async function executePaperTrade(params: {
@@ -66,6 +68,7 @@ export async function executePaperTrade(params: {
   if (!validation.valid) throw new Error(validation.error);
 
   const side = params.side as OrderSide;
+  const rankBefore = await getTraderRank(params.userId);
 
   const order = await prisma.order.create({
     data: {
@@ -150,6 +153,19 @@ export async function executePaperTrade(params: {
   await recordPortfolioSnapshot(account.id);
 
   refreshLeaderboardQuotes().catch(() => {});
+
+  notifyTradeFill({
+    userId: params.userId,
+    symbol,
+    side: params.side,
+    quantity,
+    price,
+  }).catch(() => {});
+
+  const rankAfter = await getTraderRank(params.userId);
+  notifyLeaderboardPassesAfterTrade(params.userId, rankBefore, rankAfter).catch(
+    () => {}
+  );
 
   return { orderId: order.id, price, realizedPnl, leaderboardRefresh: true };
 }

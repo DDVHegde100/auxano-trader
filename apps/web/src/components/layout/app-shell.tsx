@@ -15,6 +15,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 const DEV_MODE = process.env.NEXT_PUBLIC_ALLOW_DEV_AUTH === "true";
 
@@ -65,7 +66,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="hidden md:mt-auto md:block md:p-4">
+        <div className="hidden md:mt-auto md:block md:space-y-3 md:p-4">
+          <div className="flex items-center justify-between gap-2 px-1">
+            <span className="text-xs text-[var(--foreground-muted)]">Alerts</span>
+            <NotificationBell />
+          </div>
           {DEV_MODE ? (
             <DevUserMenu email="test@gmail.com" />
           ) : (
@@ -77,16 +82,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </div>
       </aside>
-      <main className="aux-app-main aux-container px-[var(--page-padding-x)] py-[var(--page-padding-y)]">
-        {children}
-      </main>
-      <div className="fixed right-4 top-4 z-40 md:hidden">
+      <div className="fixed right-4 top-4 z-40 flex items-center gap-2 md:right-6 md:top-6">
+        <NotificationBell />
         {DEV_MODE ? (
           <DevUserMenu email="test@gmail.com" />
         ) : (
           <UserButton />
         )}
       </div>
+      <main className="aux-app-main aux-container px-[var(--page-padding-x)] py-[var(--page-padding-y)]">
+        {children}
+      </main>
     </div>
   );
 }

@@ -20,6 +20,7 @@ import { apiFetch } from "@/src/lib/api";
 import { formatPct, formatUsd } from "@/src/lib/format";
 import { PRESET_ALGORITHMS } from "@auxano/shared";
 import { ShareSheet } from "@/src/components/ShareSheet";
+import { NotificationBell } from "@/src/components/NotificationBell";
 
 const SYMBOLS = ["AAPL", "NVDA", "MSFT", "TSLA", "GOOGL"];
 
@@ -90,8 +91,16 @@ export default function MoreScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>More</Text>
-        <Text style={styles.sub}>Backtest, leaderboard, and account</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.flex}>
+            <Text style={styles.title}>More</Text>
+            <Text style={styles.sub}>Backtest, leaderboard, and account</Text>
+          </View>
+          <NotificationBell />
+        </View>
+        <Pressable onPress={() => router.push("/notifications")}>
+          <Text style={styles.notifLink}>Open notification inbox →</Text>
+        </Pressable>
 
         <SectionHeader title="Algorithm backtester" subtitle="Test before you deploy" />
         <GlassCard>
@@ -226,8 +235,10 @@ function Metric({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.background },
   scroll: { padding: 20, paddingBottom: 48 },
+  headerRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 8 },
   title: { fontSize: 28, fontWeight: "700", color: theme.textPrimary },
-  sub: { color: theme.textSecondary, marginBottom: 20 },
+  sub: { color: theme.textSecondary, marginBottom: 8 },
+  notifLink: { color: theme.accent, fontSize: 14, marginBottom: 16 },
   label: { color: theme.textSecondary, fontSize: 13, marginBottom: 8 },
   chip: {
     padding: 12,

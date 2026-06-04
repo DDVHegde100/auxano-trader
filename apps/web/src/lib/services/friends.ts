@@ -36,17 +36,53 @@ export async function sendFriendRequest(followerId: string, targetUsername: stri
     },
   });
   if (reverse?.status === "PENDING") {
-    return prisma.userFollow.update({
+    const accepted = await prisma.userFollow.update({
       where: { id: reverse.id },
       data: { status: "ACCEPTED", respondedAt: new Date() },
-      include: { follower: { select: publicUserSelect } },
+      include: {
+        follower: { select: publicUserSelect },
+        following: { select: publicUserSelect },
+      },
     });
+    const { notifyFriendAccepted } = await import("./notifications");
+    await Promise.all([
+      notifyFriendAccepted({
+        toUserId: target.id,
+        friendUserId: accepted.follower.id,
+        friendUsername: accepted.follower.username,
+        friendName: accepted.follower.name,
+      }),
+      notifyFriendAccepted({
+        toUserId: followerId,
+        friendUserId: target.id,
+        friendUsername: target.username,
+        friendName: target.name,
+      }),
+    ]);
+    return accepted;
   }
 
-  return prisma.userFollow.create({
+  const created = await prisma.userFollow.create({
     data: { followerId, followingId: target.id, status: "PENDING" },
     include: { following: { select: publicUserSelect } },
   });
+
+  const sender = await prisma.user.findUnique({
+    where: { id: followerId },
+    select: { id: true, username: true, name: true },
+  });
+  if (sender) {
+    const { notifyFriendRequest } = await import("./notifications");
+    await notifyFriendRequest({
+      toUserId: target.id,
+      fromUserId: sender.id,
+      fromUsername: sender.username,
+      fromName: sender.name,
+      requestId: created.id,
+    });
+  }
+
+  return created;
 }
 
 export async function respondToFriendRequest(
@@ -67,7 +103,7 @@ export async function respondToFriendRequest(
   if (row.status !== "PENDING") throw new Error("Request already handled");
 
   const status: FollowStatus = action === "accept" ? "ACCEPTED" : "REJECTED";
-  return prisma.userFollow.update({
+  const updated = await prisma.userFollow.update({
     where: { id: requestId },
     data: { status, respondedAt: new Date() },
     include: {
@@ -75,6 +111,26 @@ export async function respondToFriendRequest(
       following: { select: publicUserSelect },
     },
   });
+
+  if (action === "accept") {
+    const { notifyFriendAccepted } = await import("./notifications");
+    await Promise.all([
+      notifyFriendAccepted({
+        toUserId: updated.followerId,
+        friendUserId: updated.following.id,
+        friendUsername: updated.following.username,
+        friendName: updated.following.name,
+      }),
+      notifyFriendAccepted({
+        toUserId: updated.followingId,
+        friendUserId: updated.follower.id,
+        friendUsername: updated.follower.username,
+        friendName: updated.follower.name,
+      }),
+    ]);
+  }
+
+  return updated;
 }
 
 export async function removeFriend(userId: string, otherUserId: string) {

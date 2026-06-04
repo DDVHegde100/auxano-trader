@@ -345,8 +345,9 @@ Rich strategy IDE — Blocks + Python + backtest + publish exist; missing: versi
 Friends-only visibility on leaderboard/profile
 Your privacy model
 13. ~~Strategy summary + export card (image/share sheet)~~ — `/u/[username]/week`, `/share/s/[slug]`, PNG + OG
-14
+14. ~~Notification center + push~~ — `/notifications`, bell, Expo push, prefs by category
+15
 Legal pages (privacy, terms, paper disclaimer)
 App Store
-15
-EAS TestFlight build + submit — resume [MOBILE_EAS.md](./MOBILE_EAS.md) after features 9–14; you already have Apple + Expo accounts
+16
+EAS TestFlight build + submit — resume [MOBILE_EAS.md](./MOBILE_EAS.md) after features 9–15; you already have Apple + Expo accounts

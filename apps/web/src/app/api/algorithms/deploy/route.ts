@@ -78,6 +78,14 @@ export async function POST(req: Request) {
       data: { deployedCount: { increment: 1 } },
     });
 
+    const { notifyStrategyDeployed } = await import("@/lib/services/notifications");
+    await notifyStrategyDeployed({
+      userId: user.id,
+      strategyName: strategy.name,
+      strategySlug: strategy.slug,
+      symbol,
+    });
+
     return NextResponse.json({
       success: true,
       strategy: { id: strategy.id, slug: strategy.slug, name: strategy.name },

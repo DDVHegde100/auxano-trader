@@ -76,6 +76,16 @@ enum FollowStatus {
   REJECTED
 }
 
+enum NotificationType {
+  FRIEND_REQUEST
+  FRIEND_ACCEPTED
+  LEADERBOARD_PASSED
+  TRADE_FILL
+  STRATEGY_ALERT
+  AUTOPILOT_ERROR
+  SYSTEM
+}
+
 model User {
   id                  String              @id @default(cuid())
   clerkId             String              @unique
@@ -103,6 +113,7 @@ model User {
   comments         Comment[]
   backtests        Backtest[]
   notifications    Notification[]
+  notificationPrefs  UserNotificationPrefs?
 
   @@index([clerkId])
   @@index([username])
@@ -384,16 +395,37 @@ model PriceHistory {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
+  id        String           @id @default(cuid())
   userId    String
+  type      NotificationType @default(SYSTEM)
   title     String
   body      String
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  read      Boolean          @default(false)
+  metadata  Json?
+  groupKey  String?
+  createdAt DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, read])
+  @@index([userId, createdAt])
+  @@index([userId, type])
+}
+
+model UserNotificationPrefs {
+  userId              String   @id
+  pushEnabled         Boolean  @default(true)
+  inAppEnabled        Boolean  @default(true)
+  notifyFriends       Boolean  @default(true)
+  notifyTrading       Boolean  @default(true)
+  notifyLeaderboard   Boolean  @default(true)
+  notifyStrategies    Boolean  @default(true)
+  notifyAutopilot     Boolean  @default(true)
+  expoPushToken       String?
+  webPushEnabled      Boolean  @default(false)
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model PortfolioSnapshot {
