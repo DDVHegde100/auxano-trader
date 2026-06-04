@@ -279,6 +279,23 @@ Browser / Expo
 
 For local dev steps, see [START.md](./START.md).
 
+## Vercel + health (items 5–6)
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/live` | Liveness — process up |
+| `GET /api/ready` | Readiness — DB + Clerk + env (503 if not ready) |
+| `GET /api/health` | Full report (DB, Clerk API ping, env, market) |
+
+```bash
+# After deploy
+npm run verify:deploy -- https://your-app.vercel.app
+```
+
+Mobile: set `EXPO_PUBLIC_API_URL` to the same URL. CORS is enabled on `/api/*` for Expo Bearer tokens.
+
+Deploy guide: [DEPLOY_VERCEL.md](./DEPLOY_VERCEL.md)
+
 For the 20-commit production roadmap, see [PRODUCTION.md](./PRODUCTION.md).
 
 
@@ -316,12 +333,8 @@ Rich strategy IDE — Blocks + Python + backtest + publish exist; missing: versi
 2. ~~Commit & push~~ — run `git push origin main` after each release
 3. ~~Clerk prod paths + email verification docs~~ — see `/docs/authentication` in the web app
 4. ~~ALLOW_DEV_AUTH=false in CI~~ — `scripts/check-prod-env.mjs` + `.github/workflows/ci.yml`
-5
-Vercel deploy + env on Vercel
-Public API for mobile
-6
-Health check /api/health (DB + Clerk)
-Ops + EAS
+5. ~~Vercel deploy + env on Vercel~~ — [DEPLOY_VERCEL.md](./DEPLOY_VERCEL.md), `apps/web/vercel.json`
+6. ~~Health `/api/health` + `/api/ready` + `/api/live`~~ — ops + mobile preflight; `npm run verify:deploy`
 7
 Add eas.json + iOS bundle + credentials
 TestFlight builds

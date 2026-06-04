@@ -1,6 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
+import { corsPreflightResponse, withCors } from "@/lib/cors";
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -8,6 +9,8 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/docs(.*)",
   "/api/health",
+  "/api/ready",
+  "/api/live",
   "/api/market/quotes",
   "/api/market/live",
   "/api/market/(.*)",
@@ -19,7 +22,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks/clerk",
 ]);
 
-const clerk = clerkMiddleware(async (auth, req) => {
+const clerkHandler = clerkMiddleware(async (auth, req) => {
   const isApiWithBearer =
     req.nextUrl.pathname.startsWith("/api/") &&
     req.headers.get("authorization")?.startsWith("Bearer ");
@@ -31,12 +34,29 @@ const clerk = clerkMiddleware(async (auth, req) => {
   }
 });
 
-/** Dev mode: skip Clerk entirely so test@gmail.com login works without Clerk keys */
 function devMiddleware(_req: NextRequest) {
   return NextResponse.next();
 }
 
-export default process.env.ALLOW_DEV_AUTH === "true" ? devMiddleware : clerk;
+async function runMiddleware(req: NextRequest, event: NextFetchEvent) {
+  const isApi = req.nextUrl.pathname.startsWith("/api/");
+
+  if (isApi) {
+    const preflight = corsPreflightResponse(req);
+    if (preflight) return preflight;
+  }
+
+  const handler =
+    process.env.ALLOW_DEV_AUTH === "true" ? devMiddleware : clerkHandler;
+  const response = await handler(req, event);
+
+  if (isApi && response instanceof NextResponse) {
+    return withCors(req, response);
+  }
+  return response;
+}
+
+export default runMiddleware;
 
 export const config = {
   matcher: [

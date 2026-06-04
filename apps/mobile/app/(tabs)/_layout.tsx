@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
+import { View, Text } from "react-native";
+import { ApiStatusBanner } from "@/src/components/ApiStatusBanner";
 import { colors, tabBar, fontFamily } from "@/src/styles/design-system";
-import { Text } from "react-native";
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   return (
@@ -18,6 +19,8 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
 
 export default function TabsLayout() {
   return (
+    <View style={{ flex: 1 }}>
+      <ApiStatusBanner />
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -63,5 +66,6 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    </View>
   );
 }

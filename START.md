@@ -1,6 +1,6 @@
 # Start Auxano
 
-**Production keys, Firebase, Clerk, Finnhub:** see [SETUP.md](./SETUP.md).
+**Production keys, Firebase, Clerk, Finnhub:** see [SETUP.md](./SETUP.md). **Vercel deploy + health probes:** [DEPLOY_VERCEL.md](./DEPLOY_VERCEL.md).
 
 ## One command (recommended)
 
