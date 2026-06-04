@@ -1,0 +1,37 @@
+{
+  "name": "auxano",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "start": "bash scripts/run-dev.sh",
+    "run": "bash scripts/run-dev.sh",
+    "expo": "cd apps/mobile && npx expo start --clear --lan",
+    "fix:db": "bash scripts/fix-database.sh",
+    "test:db": "node scripts/test-db.mjs",
+    "dev": "npm run dev --workspace=@auxano/web",
+    "dev:web": "npm run dev --workspace=@auxano/web",
+    "dev:mobile": "npm run start --workspace=@auxano/mobile",
+    "build": "npm run build --workspace=@auxano/web",
+    "db:generate": "npm run generate --workspace=@auxano/database",
+    "db:push": "npm run push --workspace=@auxano/database",
+    "db:seed": "npm run seed --workspace=@auxano/database",
+    "lint": "npm run lint --workspaces --if-present",
+    "git:bootstrap": "bash scripts/bootstrap-git-history.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "overrides": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0"
+  }
+}
