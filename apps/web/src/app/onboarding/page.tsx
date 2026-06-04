@@ -1,0 +1,216 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { GlassCard } from "@/components/auxano/glass-card";
+
+const STEPS = ["profile", "experience", "goals", "welcome"] as const;
+
+const EXPERIENCE = [
+  { value: "BEGINNER", label: "Beginner", desc: "New to investing" },
+  { value: "INTERMEDIATE", label: "Intermediate", desc: "1–3 years" },
+  { value: "ADVANCED", label: "Advanced", desc: "3+ years active" },
+  { value: "PROFESSIONAL", label: "Professional", desc: "Industry experience" },
+];
+
+const RISK = [
+  { value: "CONSERVATIVE", label: "Conservative" },
+  { value: "MODERATE", label: "Moderate" },
+  { value: "AGGRESSIVE", label: "Aggressive" },
+  { value: "VERY_AGGRESSIVE", label: "Very Aggressive" },
+];
+
+const GOALS = [
+  { value: "WEALTH_BUILDING", label: "Wealth Building" },
+  { value: "INCOME_GENERATION", label: "Income" },
+  { value: "CAPITAL_PRESERVATION", label: "Preservation" },
+  { value: "LEARNING", label: "Learning" },
+  { value: "RETIREMENT", label: "Retirement" },
+];
+
+export default function OnboardingPage() {
+  const router = useRouter();
+  const [step, setStep] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    username: "",
+    investingExperience: "",
+    riskTolerance: "",
+    financialGoal: "",
+  });
+
+  const current = STEPS[step];
+
+  async function complete() {
+    setLoading(true);
+    await fetch("/api/user/onboarding", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    setLoading(false);
+    router.push("/dashboard");
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#111111] px-4">
+      <div className="mb-8 flex gap-2">
+        {STEPS.map((_, i) => (
+          <div
+            key={i}
+            className={`h-1 w-12 rounded-full transition-colors ${
+              i <= step ? "bg-[#00C853]" : "bg-white/[0.08]"
+            }`}
+          />
+        ))}
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={current}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="w-full max-w-lg"
+        >
+          {current === "profile" && (
+            <GlassCard glow>
+              <h2 className="text-2xl font-semibold">Let&apos;s get to know you</h2>
+              <p className="mt-2 text-[#B0B0B0]">Your investing identity starts here</p>
+              <div className="mt-6 space-y-4">
+                <Input
+                  placeholder="Full name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+                <Input
+                  placeholder="Username"
+                  value={form.username}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                />
+              </div>
+              <Button
+                className="mt-6 w-full"
+                disabled={!form.name || !form.username}
+                onClick={() => setStep(1)}
+              >
+                Continue
+              </Button>
+            </GlassCard>
+          )}
+
+          {current === "experience" && (
+            <GlassCard glow>
+              <h2 className="text-2xl font-semibold">Investing experience</h2>
+              <div className="mt-6 grid gap-3">
+                {EXPERIENCE.map((e) => (
+                  <button
+                    key={e.value}
+                    type="button"
+                    onClick={() =>
+                      setForm({ ...form, investingExperience: e.value })
+                    }
+                    className={`rounded-xl border p-4 text-left transition-all ${
+                      form.investingExperience === e.value
+                        ? "border-[#00C853]/50 bg-[#00C853]/10"
+                        : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <p className="font-medium">{e.label}</p>
+                    <p className="text-sm text-[#B0B0B0]">{e.desc}</p>
+                  </button>
+                ))}
+              </div>
+              <Button
+                className="mt-6 w-full"
+                disabled={!form.investingExperience}
+                onClick={() => setStep(2)}
+              >
+                Continue
+              </Button>
+            </GlassCard>
+          )}
+
+          {current === "goals" && (
+            <GlassCard glow>
+              <h2 className="text-2xl font-semibold">Risk & goals</h2>
+              <p className="mt-2 text-sm text-[#B0B0B0]">Risk tolerance</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {RISK.map((r) => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, riskTolerance: r.value })}
+                    className={`rounded-lg border px-4 py-2 text-sm ${
+                      form.riskTolerance === r.value
+                        ? "border-[#00C853]/50 bg-[#00C853]/10"
+                        : "border-white/[0.08]"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-6 text-sm text-[#B0B0B0]">Financial goal</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {GOALS.map((g) => (
+                  <button
+                    key={g.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, financialGoal: g.value })}
+                    className={`rounded-lg border px-4 py-2 text-sm ${
+                      form.financialGoal === g.value
+                        ? "border-[#00C853]/50 bg-[#00C853]/10"
+                        : "border-white/[0.08]"
+                    }`}
+                  >
+                    {g.label}
+                  </button>
+                ))}
+              </div>
+              <Button
+                className="mt-6 w-full"
+                disabled={!form.riskTolerance || !form.financialGoal}
+                onClick={() => setStep(3)}
+              >
+                Continue
+              </Button>
+            </GlassCard>
+          )}
+
+          {current === "welcome" && (
+            <GlassCard glow className="text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#00C853]/20 text-3xl"
+              >
+                ✓
+              </motion.div>
+              <h2 className="text-3xl font-semibold">
+                Welcome, {form.name.split(" ")[0]}
+              </h2>
+              <p className="mt-3 text-[#B0B0B0]">
+                Your paper trading account is funded with{" "}
+                <span className="text-[#00C853] font-semibold">$100,000</span>{" "}
+                virtual capital.
+              </p>
+              <Button
+                className="mt-8 w-full"
+                size="lg"
+                onClick={complete}
+                disabled={loading}
+              >
+                {loading ? "Setting up..." : "Enter Auxano"}
+              </Button>
+            </GlassCard>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
