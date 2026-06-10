@@ -33,6 +33,7 @@ function AppStack() {
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="strategy/[slug]" />
         <Stack.Screen name="notifications" />
+        <Stack.Screen name="compete" />
       </Stack>
     </>
   );

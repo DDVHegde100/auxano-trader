@@ -101,6 +101,15 @@ export default function MoreScreen() {
         <Pressable onPress={() => router.push("/notifications")}>
           <Text style={styles.notifLink}>Open notification inbox →</Text>
         </Pressable>
+        <Pressable onPress={() => router.push("/compete")} style={{ marginBottom: 16 }}>
+          <GlassCard style={styles.deployRow}>
+            <View style={styles.flex}>
+              <Text style={styles.deployName}>Compete</Text>
+              <Text style={styles.deployTag}>Leagues & 1v1 paper duels</Text>
+            </View>
+            <Text style={styles.deployArrow}>Open →</Text>
+          </GlassCard>
+        </Pressable>
 
         <SectionHeader title="Algorithm backtester" subtitle="Test before you deploy" />
         <GlassCard>
