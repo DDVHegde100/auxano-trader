@@ -1,6 +1,6 @@
 # App icon & splash (your image)
 
-TestFlight and the home screen use **`apps/mobile/assets/icon.png`** (configured in `app.config.ts`). Right now those files are dark placeholders — replace them with your logo.
+TestFlight and the home screen use **`apps/mobile/assets/icon.png`** (configured in `app.config.ts`). The repo ships **`auxano.png`** at the root; run the script below to regenerate assets after changing the source image.
 
 ## Quick setup (Mac)
 
