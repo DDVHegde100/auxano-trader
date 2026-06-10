@@ -20,6 +20,12 @@
       ]
     }
   ],
+  "crons": [
+    {
+      "path": "/api/cron/autopilot",
+      "schedule": "*/10 * * * *"
+    }
+  ],
   "github": {
     "silent": true
   }

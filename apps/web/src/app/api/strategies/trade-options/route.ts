@@ -7,10 +7,10 @@ export async function GET(req: Request) {
   const user = await requireDbUser(req);
 
   const mine = await prisma.strategy.findMany({
-    where: { creatorId: user.id, isPublished: true },
-    select: { id: true, name: true, logicJson: true },
+    where: { creatorId: user.id },
+    select: { id: true, name: true, logicJson: true, visibility: true },
     orderBy: { updatedAt: "desc" },
-    take: 20,
+    take: 30,
   });
 
   const deployed = await prisma.strategyDeployment.findMany({

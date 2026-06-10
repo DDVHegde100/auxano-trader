@@ -5,6 +5,10 @@ import { prisma } from "@auxano/database";
 import { runBacktest, backtestToQuantScore } from "@auxano/shared";
 import type { StrategyLogic } from "@auxano/shared";
 import { toJsonValue } from "@/lib/json";
+import {
+  parseVisibility,
+  visibilityToIsPublic,
+} from "@/lib/services/strategy-access";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -49,6 +53,11 @@ export async function POST(req: Request) {
     });
     const quant = backtestToQuantScore(metrics);
 
+    const visibility = parseVisibility(
+      body.visibility ?? body.isPublic,
+      "PUBLIC"
+    );
+
     const strategy = await prisma.strategy.create({
       data: {
         creatorId: user.id,
@@ -58,7 +67,8 @@ export async function POST(req: Request) {
         category: body.category ?? "BALANCED",
         riskRating: body.riskRating ?? "MEDIUM",
         logicJson: toJsonValue(logic),
-        isPublic: body.isPublic ?? true,
+        visibility,
+        isPublic: visibilityToIsPublic(visibility),
         isPublished: body.isPublished ?? true,
         historicalReturn: metrics.annualReturn,
         sharpeRatio: metrics.sharpeRatio,
