@@ -322,7 +322,7 @@ Live leaderboard updates — No cron/job to refresh ranks when trades happen.
 
 Production deploy + stable API — Blocking TestFlight and real multi-user use.
 
-Automated strategy execution — Strategies gate manual buys; no bot running your blocks/Python on a schedule against live prices.
+~~Automated strategy execution~~ — `/bots` autopilot: cron + live quotes + block evaluation + paper orders within allocation.
 
 Rich strategy IDE — Blocks + Python + backtest + publish exist; missing: versioning, walk-forward tests, multi-symbol portfolios, live paper deployment loop, alerts when rules fire.
 
@@ -335,7 +335,7 @@ Rich strategy IDE — Blocks + Python + backtest + publish exist; missing: versi
 4. ~~ALLOW_DEV_AUTH=false in CI~~ — `scripts/check-prod-env.mjs` + `.github/workflows/ci.yml`
 5. ~~Vercel deploy + env on Vercel~~ — [DEPLOY_VERCEL.md](./DEPLOY_VERCEL.md), `apps/web/vercel.json`
 6. ~~Health `/api/health` + `/api/ready` + `/api/live`~~ — ops + mobile preflight; `npm run verify:deploy`
-7. **EAS + iOS (scaffold done — build later)** — `eas.json`, `app.config.ts`, [MOBILE_EAS.md](./MOBILE_EAS.md). *Pending:* fill `.env.production`, `eas login`, `eas init`, TestFlight build.
+7. **EAS + iOS / TestFlight** — [TESTFLIGHT_SETUP.md](./TESTFLIGHT_SETUP.md), [MOBILE_EAS.md](./MOBILE_EAS.md). *You do:* Apple Team ID + ASC app id in `eas.json`, Clerk `pk_*`, `eas init`, `npm run mobile:build:ios:preview`.
 8. **Mobile prod env (deferred)** — API URL in `eas.json` / example; *pending:* Clerk key in `.env.production` + EAS env when you return for TestFlight. Dev still uses `apps/mobile/.env` + LAN IP.
 
 9. ~~Leaderboard: live quotes + refresh after trade~~ — `/leaderboard`, `refreshLeaderboardQuotes`, trade event
@@ -346,8 +346,9 @@ Friends-only visibility on leaderboard/profile
 Your privacy model
 13. ~~Strategy summary + export card (image/share sheet)~~ — `/u/[username]/week`, `/share/s/[slug]`, PNG + OG
 14. ~~Notification center + push~~ — `/notifications`, bell, Expo push, prefs by category
-15
+15. ~~Timeboxed leagues & 1v1 challenges~~ — `/compete`, rotating weekly/monthly templates, `/challenge/[code]` invites, live return % standings
+16. ~~Paper strategy autopilot~~ — `/bots`, `AutopilotRun` logs, Vercel cron `/api/cron/autopilot` (set `CRON_SECRET`), deploy → auto-run
+17
 Legal pages (privacy, terms, paper disclaimer)
 App Store
-16
-EAS TestFlight build + submit — resume [MOBILE_EAS.md](./MOBILE_EAS.md) after features 9–15; you already have Apple + Expo accounts
+18. **TestFlight** — follow [TESTFLIGHT_SETUP.md](./TESTFLIGHT_SETUP.md) (Apple portal steps + env values)

@@ -69,13 +69,14 @@ npm run verify:deploy -- https://YOUR.vercel.app
 
 ## 6. Mobile app (Expo / EAS)
 
-In `apps/mobile/.env`:
+Production API for this deploy: **https://auxano-red.vercel.app**
 
 ```bash
-EXPO_PUBLIC_API_URL=https://YOUR.vercel.app
-EXPO_PUBLIC_USE_DEV_AUTH=false
-EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxx
+cp apps/mobile/.env.production.example apps/mobile/.env.production
+# Set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY to the same pk_* as Vercel web
 ```
+
+TestFlight / App Store builds: [MOBILE_EAS.md](./MOBILE_EAS.md) (`npm run mobile:build:ios`).
 
 The API enables CORS for mobile `Authorization: Bearer <clerk_token>` requests.
 
