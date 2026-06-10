@@ -44,10 +44,16 @@ function typeAllowed(
     case "TRADE_FILL":
       return prefs.notifyTrading;
     case "LEADERBOARD_PASSED":
+    case "LEAGUE_UPDATE":
       return prefs.notifyLeaderboard;
+    case "DUEL_INVITE":
+    case "DUEL_ACCEPTED":
+    case "DUEL_RESULT":
+      return prefs.notifyFriends;
     case "STRATEGY_ALERT":
       return prefs.notifyStrategies;
     case "AUTOPILOT_ERROR":
+    case "AUTOPILOT_TRADE":
       return prefs.notifyAutopilot;
     default:
       return true;
@@ -372,11 +378,104 @@ export async function notifyStrategyDeployed(params: {
     title: "Strategy deployed",
     body: `${params.strategyName} is active on ${params.symbol} (paper)`,
     metadata: {
-      href: `/strategies/${params.strategySlug}`,
+      href: "/bots",
       strategyName: params.strategyName,
       strategySlug: params.strategySlug,
       symbol: params.symbol,
     },
+  });
+}
+
+export async function notifyDuelInvite(params: {
+  toUserId: string;
+  fromUserId: string;
+  fromUsername: string | null;
+  fromName: string | null;
+  duelId: string;
+  inviteCode: string;
+  durationDays: number;
+}) {
+  const label = params.fromName ?? params.fromUsername ?? "A friend";
+  return createNotification({
+    userId: params.toUserId,
+    type: "DUEL_INVITE",
+    title: "Head-to-head challenge",
+    body: `${label} challenged you to a ${params.durationDays}-day paper duel`,
+    metadata: {
+      href: `/compete/duel/${params.duelId}`,
+      actorId: params.fromUserId,
+      actorUsername: params.fromUsername ?? undefined,
+      actorName: params.fromName ?? undefined,
+    },
+  });
+}
+
+export async function notifyDuelAccepted(params: {
+  toUserId: string;
+  fromUserId: string;
+  fromUsername: string | null;
+  fromName: string | null;
+  duelId: string;
+  inviteCode: string;
+}) {
+  const label = params.fromName ?? params.fromUsername ?? "Your opponent";
+  return createNotification({
+    userId: params.toUserId,
+    type: "DUEL_ACCEPTED",
+    title: "Challenge accepted",
+    body: `${label} accepted — duel is live`,
+    metadata: {
+      href: `/compete/duel/${params.duelId}`,
+      actorId: params.fromUserId,
+      actorUsername: params.fromUsername ?? undefined,
+    },
+  });
+}
+
+export async function notifyDuelResult(params: {
+  duelId: string;
+  winnerId: string | null;
+  creatorId: string;
+  opponentId: string;
+  inviteCode: string;
+}) {
+  const users = await prisma.user.findMany({
+    where: { id: { in: [params.creatorId, params.opponentId] } },
+    select: { id: true, username: true, name: true },
+  });
+  const creator = users.find((u) => u.id === params.creatorId);
+  const opponent = users.find((u) => u.id === params.opponentId);
+
+  for (const uid of [params.creatorId, params.opponentId]) {
+    const won = params.winnerId === uid;
+    const other =
+      uid === params.creatorId ? opponent?.name ?? opponent?.username : creator?.name ?? creator?.username;
+    await createNotification({
+      userId: uid,
+      type: "DUEL_RESULT",
+      title: won ? "You won the duel" : "Duel finished",
+      body: won
+        ? `You beat ${other ?? "your opponent"} (paper)`
+        : params.winnerId
+          ? `${other ?? "Opponent"} won this round`
+          : "Tie — no winner this time",
+      metadata: { href: `/compete/duel/${params.duelId}` },
+    });
+  }
+}
+
+export async function notifyLeagueRank(params: {
+  userId: string;
+  leagueTitle: string;
+  rank: number;
+  leagueId: string;
+}) {
+  return createNotification({
+    userId: params.userId,
+    type: "LEAGUE_UPDATE",
+    title: "League standing",
+    body: `You're #${params.rank} in ${params.leagueTitle}`,
+    metadata: { href: `/compete/league/${params.leagueId}`, rank: params.rank },
   });
 }
 
@@ -385,6 +484,7 @@ export async function notifyAutopilotError(params: {
   strategyName: string;
   message: string;
   strategySlug?: string;
+  deploymentId?: string;
 }) {
   return createNotification({
     userId: params.userId,
@@ -392,10 +492,40 @@ export async function notifyAutopilotError(params: {
     title: "Autopilot paused",
     body: `${params.strategyName}: ${params.message}`,
     metadata: {
-      href: params.strategySlug ? `/strategies/${params.strategySlug}` : "/trade",
+      href: params.deploymentId
+        ? `/bots/${params.deploymentId}`
+        : params.strategySlug
+          ? `/strategies/${params.strategySlug}`
+          : "/bots",
       strategyName: params.strategyName,
       strategySlug: params.strategySlug,
       errorCode: "AUTOPILOT",
+    },
+  });
+}
+
+export async function notifyAutopilotTrade(params: {
+  userId: string;
+  strategyName: string;
+  deploymentId: string;
+  side: "BUY" | "SELL";
+  symbol: string;
+  price: number;
+  realizedPnl?: number;
+}) {
+  const pnl =
+    params.realizedPnl != null
+      ? ` · P&L $${params.realizedPnl.toFixed(2)}`
+      : "";
+  return createNotification({
+    userId: params.userId,
+    type: "AUTOPILOT_TRADE",
+    title: `Bot ${params.side} ${params.symbol}`,
+    body: `${params.strategyName} @ $${params.price.toFixed(2)}${pnl}`,
+    metadata: {
+      href: `/bots/${params.deploymentId}`,
+      symbol: params.symbol,
+      side: params.side,
     },
   });
 }

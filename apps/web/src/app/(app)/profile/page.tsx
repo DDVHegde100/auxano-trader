@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, formatPercent } from "@/lib/utils";
 import { Settings, Users, Share2 } from "lucide-react";
 import { PortfolioSharePanel } from "@/components/share/share-card-panel";
+import { MyStrategiesPanel } from "@/components/strategies/my-strategies-panel";
 
 type ProfileData = {
   user: {
@@ -24,7 +25,13 @@ type ProfileData = {
     financialGoal: string | null;
   };
   portfolio: { totalValue: number; returnPct: number; cashBalance: number } | null;
-  strategies: { id: string; name: string; slug: string; quantScore: number }[];
+  strategies: {
+    id: string;
+    name: string;
+    slug: string;
+    quantScore: number;
+    visibility: "PUBLIC" | "FRIENDS" | "PRIVATE";
+  }[];
   isSelf: boolean;
 };
 
@@ -168,20 +175,15 @@ export default function MyProfilePage() {
         </Button>
       </GlassCard>
 
-      {profile.strategies.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">Published strategies</h2>
-          <div className="space-y-2">
-            {profile.strategies.map((s) => (
-              <Link key={s.id} href={`/strategies/${s.slug}`}>
-                <GlassCard className="!py-3 hover:bg-white/[0.04]">
-                  {s.name} · score {s.quantScore}
-                </GlassCard>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      <section>
+        <h2 className="mb-1 text-lg font-semibold">My strategies</h2>
+        <p className="mb-4 text-sm text-[var(--foreground-muted)]">
+          Public strategies appear in the community marketplace. Friends-only
+          strategies show on your profile for mutual friends. Private strategies
+          are only visible to you — you can still trade and run them on Bots.
+        </p>
+        <MyStrategiesPanel strategies={profile.strategies} onChanged={load} />
+      </section>
     </div>
   );
 }

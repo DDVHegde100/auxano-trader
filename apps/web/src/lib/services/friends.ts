@@ -1,6 +1,7 @@
 import { prisma, FollowStatus } from "@auxano/database";
 import { decimalToNumber } from "@auxano/shared";
 import { getOrFetchQuote } from "./market";
+import { listCreatorStrategies } from "./strategy-library";
 
 export async function sendFriendRequest(followerId: string, targetUsername: string) {
   const username = targetUsername.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
@@ -256,23 +257,12 @@ export async function getUserProfile(username: string, viewerId?: string) {
     where: { username: uname },
     include: {
       paperAccount: { include: { positions: true } },
-      strategies: {
-        where: { isPublished: true },
-        take: 6,
-        orderBy: { quantScore: "desc" },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          quantScore: true,
-          category: true,
-        },
-      },
     },
   });
   if (!user) return null;
 
   const isSelf = viewerId === user.id;
+  const strategies = (await listCreatorStrategies(user.id, viewerId)).slice(0, 12);
   let relation: "none" | "pending_out" | "pending_in" | "friends" = "none";
   if (viewerId && !isSelf) {
     const row = await prisma.userFollow.findFirst({
@@ -331,7 +321,7 @@ export async function getUserProfile(username: string, viewerId?: string) {
       financialGoal: user.financialGoal,
       createdAt: user.createdAt,
     },
-    strategies: user.strategies,
+    strategies,
     portfolio,
     relation,
     isSelf,

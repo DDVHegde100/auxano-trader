@@ -13,6 +13,8 @@ import {
   TrendingUp,
   Users,
   UserCircle,
+  Swords,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -24,8 +26,10 @@ const nav = [
   { href: "/marketplace", label: "Marketplace", icon: Store },
   { href: "/builder", label: "Builder", icon: Wrench },
   { href: "/trade", label: "Trade", icon: TrendingUp },
+  { href: "/bots", label: "Bots", icon: Bot },
   { href: "/portfolio", label: "Portfolio", icon: Wallet },
   { href: "/leaderboard", label: "Leaders", icon: Trophy },
+  { href: "/compete", label: "Compete", icon: Swords },
   { href: "/friends", label: "Friends", icon: Users },
   { href: "/profile", label: "Profile", icon: UserCircle },
 ];

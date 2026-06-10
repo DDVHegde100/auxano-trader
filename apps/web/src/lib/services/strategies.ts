@@ -1,6 +1,7 @@
 import { prisma, StrategyCategory } from "@auxano/database";
 import type { MarketplaceStrategy } from "@auxano/shared";
 import { decimalToNumber } from "@auxano/shared";
+import { canViewStrategy } from "./strategy-access";
 
 export async function listMarketplaceStrategies(params: {
   category?: string;
@@ -8,7 +9,7 @@ export async function listMarketplaceStrategies(params: {
   search?: string;
 }): Promise<MarketplaceStrategy[]> {
   const where: Record<string, unknown> = {
-    isPublic: true,
+    visibility: "PUBLIC",
     isPublished: true,
   };
 
@@ -93,6 +94,7 @@ export async function listMarketplaceStrategies(params: {
     quantScore: s.quantScore,
     followerCount: s.followerCount,
     likeCount: s.likeCount,
+    visibility: s.visibility,
     isFollowing: following.has(s.id),
     isLiked: liked.has(s.id),
     isSaved: saved.has(s.id),
@@ -117,6 +119,16 @@ export async function getStrategyBySlug(slug: string, userId?: string) {
     },
   });
   if (!strategy) return null;
+
+  const allowed = await canViewStrategy({
+    strategy: {
+      creatorId: strategy.creatorId,
+      visibility: strategy.visibility,
+      isPublished: strategy.isPublished,
+    },
+    viewerId: userId,
+  });
+  if (!allowed) return null;
 
   let isFollowing = false;
   let isLiked = false;

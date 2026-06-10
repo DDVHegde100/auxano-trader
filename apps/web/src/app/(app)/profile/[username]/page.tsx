@@ -20,7 +20,13 @@ type ProfileResponse = {
     investingExperience: string | null;
   };
   portfolio: { totalValue: number; returnPct: number } | null;
-  strategies: { id: string; name: string; slug: string; quantScore: number }[];
+  strategies: {
+    id: string;
+    name: string;
+    slug: string;
+    quantScore: number;
+    visibility?: "PUBLIC" | "FRIENDS" | "PRIVATE";
+  }[];
   relation: "none" | "pending_out" | "pending_in" | "friends";
   isSelf: boolean;
   canViewPortfolio: boolean;
@@ -147,7 +153,12 @@ export default function PublicProfilePage() {
           <div className="space-y-2">
             {profile.strategies.map((s) => (
               <Link key={s.id} href={`/strategies/${s.slug}`}>
-                <GlassCard className="!py-3">{s.name}</GlassCard>
+                <GlassCard className="!py-3 flex items-center justify-between">
+                  <span>{s.name}</span>
+                  <span className="text-xs text-[var(--foreground-muted)]">
+                    {s.visibility === "FRIENDS" ? "Friends" : "Public"}
+                  </span>
+                </GlassCard>
               </Link>
             ))}
           </div>

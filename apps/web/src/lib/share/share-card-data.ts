@@ -273,7 +273,7 @@ export async function getStrategyShareCard(
   slug: string
 ): Promise<StrategyShareCard | null> {
   const strategy = await prisma.strategy.findFirst({
-    where: { slug, isPublished: true, isPublic: true },
+    where: { slug, isPublished: true, visibility: "PUBLIC" },
     include: {
       creator: { select: { name: true, username: true } },
       backtests: {

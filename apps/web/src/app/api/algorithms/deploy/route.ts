@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       },
     });
 
-    await prisma.strategyDeployment.upsert({
+    const deployment = await prisma.strategyDeployment.upsert({
       where: {
         strategyId_userId: { strategyId: strategy.id, userId: user.id },
       },
@@ -72,6 +72,17 @@ export async function POST(req: Request) {
       },
       update: { isActive: true, allocated },
     });
+
+    const { configureAutopilotOnDeploy, runDeploymentAutopilot } =
+      await import("@/lib/services/autopilot");
+    await configureAutopilotOnDeploy({
+      deploymentId: deployment.id,
+      logic: preset.logic,
+      presetKey: preset.id,
+      primarySymbol: symbol,
+      intervalMinutes: 10,
+    });
+    runDeploymentAutopilot(deployment.id).catch(() => {});
 
     await prisma.strategy.update({
       where: { id: strategy.id },
@@ -89,6 +100,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       strategy: { id: strategy.id, slug: strategy.slug, name: strategy.name },
+      deploymentId: deployment.id,
+      autopilot: true,
       layman,
       metrics,
     });

@@ -16,7 +16,11 @@ export default function BuilderPage() {
 
   async function handleSave(
     logic: StrategyLogic,
-    meta: { name: string; description: string }
+    meta: {
+      name: string;
+      description: string;
+      visibility: "PUBLIC" | "FRIENDS" | "PRIVATE";
+    }
   ) {
     setSaving(true);
     const bt = await fetch("/api/backtest", {
@@ -39,6 +43,7 @@ export default function BuilderPage() {
         name: meta.name,
         description: meta.description,
         logicJson: logic,
+        visibility: meta.visibility,
         isPublished: true,
       }),
     }).then((r) => r.json());

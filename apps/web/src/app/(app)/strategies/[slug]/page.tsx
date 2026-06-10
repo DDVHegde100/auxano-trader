@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/auxano/glass-card";
@@ -10,19 +11,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPercent } from "@/lib/utils";
-import { Heart, UserPlus, MessageCircle, Share2 } from "lucide-react";
+import { Heart, UserPlus, MessageCircle, Share2, Copy, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { StrategySharePanel } from "@/components/share/share-card-panel";
 
 export default function StrategyDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const router = useRouter();
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [comment, setComment] = useState("");
   const [tab, setTab] = useState<"overview" | "performance" | "comments">("overview");
+  const [notFound, setNotFound] = useState(false);
+
+  function reload() {
+    fetch(`/api/strategies/${slug}`, { credentials: "same-origin" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) {
+          setNotFound(true);
+          setData(null);
+        } else {
+          setNotFound(false);
+          setData(d);
+        }
+      });
+  }
 
   useEffect(() => {
-    fetch(`/api/strategies/${slug}`)
-      .then((r) => r.json())
-      .then(setData);
+    reload();
   }, [slug]);
 
   async function toggleFollow() {
@@ -49,7 +65,19 @@ export default function StrategyDetailPage() {
     setData(d);
   }
 
+  if (notFound) {
+    return (
+      <GlassCard>
+        <p className="text-[var(--foreground-muted)]">
+          Strategy not found or you don&apos;t have permission to view it.
+        </p>
+      </GlassCard>
+    );
+  }
+
   if (!data) return <Skeleton className="h-96 w-full" />;
+
+  const isOwner = data.isOwner === true;
 
   const backtest = (data.backtests as { result?: { equityCurve: unknown[] } }[])?.[0];
 
@@ -62,15 +90,59 @@ export default function StrategyDetailPage() {
           <p className="text-[var(--foreground-muted)]">
             by {(data.creator as { name: string }).name} · {data.category as string}
           </p>
-          <div className="mt-4 flex gap-2">
-            <Button variant="secondary" size="sm" onClick={toggleFollow}>
-              <UserPlus className="h-4 w-4" />
-              {data.isFollowing ? "Following" : "Follow"}
-            </Button>
-            <Button variant="secondary" size="sm" onClick={toggleLike}>
-              <Heart className="h-4 w-4" />
-              {data.isLiked ? "Liked" : "Like"}
-            </Button>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {!isOwner && (
+              <>
+                <Button variant="secondary" size="sm" onClick={toggleFollow}>
+                  <UserPlus className="h-4 w-4" />
+                  {data.isFollowing ? "Following" : "Follow"}
+                </Button>
+                <Button variant="secondary" size="sm" onClick={toggleLike}>
+                  <Heart className="h-4 w-4" />
+                  {data.isLiked ? "Liked" : "Like"}
+                </Button>
+              </>
+            )}
+            {isOwner && (
+              <>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={async () => {
+                    const res = await fetch(`/api/strategies/${slug}/duplicate`, {
+                      method: "POST",
+                      credentials: "same-origin",
+                    });
+                    const d = await res.json();
+                    if (d.strategy?.slug) router.push(`/strategies/${d.strategy.slug}`);
+                  }}
+                >
+                  <Copy className="h-4 w-4" /> Duplicate
+                </Button>
+                {!String(slug).startsWith("preset-") && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="text-loss"
+                    onClick={async () => {
+                      if (!confirm("Delete this strategy?")) return;
+                      const res = await fetch(`/api/strategies/${slug}`, {
+                        method: "DELETE",
+                        credentials: "same-origin",
+                      });
+                      if (res.ok) router.push("/profile");
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete
+                  </Button>
+                )}
+                <Link href="/profile">
+                  <Button variant="secondary" size="sm">
+                    Manage visibility
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </motion.div>

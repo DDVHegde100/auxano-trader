@@ -44,5 +44,10 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   TRADE_FILL: "Trading",
   STRATEGY_ALERT: "Strategies",
   AUTOPILOT_ERROR: "Autopilot",
+  AUTOPILOT_TRADE: "Autopilot",
+  DUEL_INVITE: "Duel",
+  DUEL_ACCEPTED: "Duel",
+  DUEL_RESULT: "Duel",
+  LEAGUE_UPDATE: "League",
   SYSTEM: "System",
 };

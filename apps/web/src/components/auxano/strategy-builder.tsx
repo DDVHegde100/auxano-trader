@@ -25,15 +25,25 @@ import {
 
 let nodeId = 1;
 
+export type StrategyVisibilityChoice = "PUBLIC" | "FRIENDS" | "PRIVATE";
+
 export function StrategyBuilder({
   onSave,
   initial,
 }: {
-  onSave: (logic: StrategyLogic, meta: { name: string; description: string }) => void;
+  onSave: (
+    logic: StrategyLogic,
+    meta: {
+      name: string;
+      description: string;
+      visibility: StrategyVisibilityChoice;
+    }
+  ) => void;
   initial?: StrategyLogic;
 }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [visibility, setVisibility] = useState<StrategyVisibilityChoice>("PUBLIC");
   const [mode, setMode] = useState<"blocks" | "code">(
     initial?.meta?.builderMode ?? "blocks"
   );
@@ -107,7 +117,7 @@ export function StrategyBuilder({
 
   function handleSave() {
     if (!name.trim()) return;
-    onSave(buildLogic(), { name, description });
+    onSave(buildLogic(), { name, description, visibility });
   }
 
   return (
@@ -298,6 +308,54 @@ export function StrategyBuilder({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div className="rounded-xl border border-[var(--border-default)] bg-black/20 p-4">
+        <p className="text-sm font-medium">Who can see this strategy?</p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          {(
+            [
+              {
+                id: "PUBLIC" as const,
+                title: "Public",
+                desc: "Listed in community marketplace",
+              },
+              {
+                id: "FRIENDS" as const,
+                title: "Friends only",
+                desc: "Visible to mutual friends on your profile",
+              },
+              {
+                id: "PRIVATE" as const,
+                title: "Private",
+                desc: "Only you — still usable in Trade & Bots",
+              },
+            ] as const
+          ).map((opt) => (
+            <label
+              key={opt.id}
+              className={`flex flex-1 cursor-pointer flex-col rounded-xl border px-4 py-3 transition-colors ${
+                visibility === opt.id
+                  ? "border-[var(--camel)] bg-[var(--camel)]/10"
+                  : "border-white/10 hover:border-white/20"
+              }`}
+            >
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <input
+                  type="radio"
+                  name="visibility"
+                  checked={visibility === opt.id}
+                  onChange={() => setVisibility(opt.id)}
+                  className="h-4 w-4"
+                />
+                {opt.title}
+              </span>
+              <span className="mt-1 pl-6 text-xs text-[var(--foreground-muted)]">
+                {opt.desc}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
 
       {infoBlock && (
         <div className="rounded-xl border border-[var(--border-default)] bg-[var(--accent-muted)] p-4 text-sm text-foreground">

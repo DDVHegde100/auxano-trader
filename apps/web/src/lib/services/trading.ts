@@ -11,6 +11,7 @@ import { getOrFetchQuote } from "./market";
 import { refreshLeaderboardQuotes } from "./leaderboard";
 import { getTraderRank, notifyLeaderboardPassesAfterTrade } from "./leaderboard-ranks";
 import { notifyTradeFill } from "./notifications";
+import { finalizeExpiredDuels } from "./competitions";
 import { assertCanBuySymbol } from "./strategy-trade";
 
 export async function executePaperTrade(params: {
@@ -21,6 +22,8 @@ export async function executePaperTrade(params: {
   amountUsd?: number;
   strategyId?: string;
   presetId?: string;
+  strategyDeploymentId?: string;
+  source?: "MANUAL" | "AUTOPILOT";
 }) {
   const account = await prisma.paperAccount.findUnique({
     where: { userId: params.userId },
@@ -70,6 +73,8 @@ export async function executePaperTrade(params: {
   const side = params.side as OrderSide;
   const rankBefore = await getTraderRank(params.userId);
 
+  const tradeSource = params.source ?? "MANUAL";
+
   const order = await prisma.order.create({
     data: {
       accountId: account.id,
@@ -79,6 +84,8 @@ export async function executePaperTrade(params: {
       status: "FILLED",
       filledPrice: price,
       filledAt: new Date(),
+      source: tradeSource,
+      strategyDeploymentId: params.strategyDeploymentId ?? null,
     },
   });
 
@@ -147,6 +154,8 @@ export async function executePaperTrade(params: {
       quantity,
       price,
       realizedPnl,
+      source: tradeSource,
+      strategyDeploymentId: params.strategyDeploymentId ?? null,
     },
   });
 
@@ -154,18 +163,22 @@ export async function executePaperTrade(params: {
 
   refreshLeaderboardQuotes().catch(() => {});
 
-  notifyTradeFill({
-    userId: params.userId,
-    symbol,
-    side: params.side,
-    quantity,
-    price,
-  }).catch(() => {});
+  if (tradeSource === "MANUAL") {
+    notifyTradeFill({
+      userId: params.userId,
+      symbol,
+      side: params.side,
+      quantity,
+      price,
+    }).catch(() => {});
+  }
 
   const rankAfter = await getTraderRank(params.userId);
   notifyLeaderboardPassesAfterTrade(params.userId, rankBefore, rankAfter).catch(
     () => {}
   );
+
+  finalizeExpiredDuels().catch(() => {});
 
   return { orderId: order.id, price, realizedPnl, leaderboardRefresh: true };
 }

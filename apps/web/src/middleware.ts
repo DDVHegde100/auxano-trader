@@ -23,6 +23,9 @@ const isPublicRoute = createRouteMatcher([
   "/u/(.*)",
   "/share/(.*)",
   "/api/share/(.*)",
+  "/challenge/(.*)",
+  "/api/compete/duels/invite/(.*)",
+  "/api/cron/(.*)",
 ]);
 
 const clerkHandler = clerkMiddleware(async (auth, req) => {
