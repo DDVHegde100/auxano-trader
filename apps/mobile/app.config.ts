@@ -18,12 +18,12 @@ export default (_ctx: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: bundleId,
-    buildNumber: "1",
     config: {
       usesNonExemptEncryption: false,
     },
     infoPlist: {
       UIBackgroundModes: ["remote-notification"],
+      ITSAppUsesNonExemptEncryption: false,
     },
   },
   android: {
@@ -36,6 +36,14 @@ export default (_ctx: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     "expo-router",
+    [
+      "expo-splash-screen",
+      {
+        image: "./assets/splash-icon.png",
+        resizeMode: "contain",
+        backgroundColor: "#111111",
+      },
+    ],
     "expo-secure-store",
     [
       "expo-notifications",
@@ -56,11 +64,19 @@ export default (_ctx: ConfigContext): ExpoConfig => ({
   experiments: {
     typedRoutes: true,
   },
+  updates: {
+    url: "https://u.expo.dev/67a39614-b3cf-4e79-bbea-c63496891ead",
+  },
+  runtimeVersion: {
+    policy: "appVersion",
+  },
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL,
     useDevAuth: process.env.EXPO_PUBLIC_USE_DEV_AUTH === "true",
     eas: {
-      projectId: process.env.EAS_PROJECT_ID,
+      projectId:
+        process.env.EAS_PROJECT_ID ??
+        "67a39614-b3cf-4e79-bbea-c63496891ead",
     },
   },
 });

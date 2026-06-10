@@ -23,6 +23,10 @@
     "db:setup:supabase": "node scripts/setup-supabase.mjs",
     "check:prod-env": "CI=true NODE_ENV=production node scripts/check-prod-env.mjs",
     "verify:deploy": "node scripts/verify-deploy.mjs",
+    "mobile:eas:init": "npm run eas:init --workspace=@auxano/mobile",
+    "mobile:build:ios": "npm run build:ios --workspace=@auxano/mobile",
+    "mobile:build:ios:preview": "npm run build:ios:preview --workspace=@auxano/mobile",
+    "mobile:submit:ios": "npm run submit:ios --workspace=@auxano/mobile",
     "web:clean": "npm run dev:clean --workspace=@auxano/web",
     "lint": "npm run lint --workspaces --if-present",
     "git:bootstrap": "bash scripts/bootstrap-git-history.sh"
