@@ -13,3 +13,5 @@ export * from "./dev-auth";
 export * from "./strategy-meta";
 export * from "./block-catalog";
 export * from "./blocks-to-python";
+export * from "./competition-templates";
+export * from "./strategy-signals";

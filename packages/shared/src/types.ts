@@ -131,6 +131,7 @@ export interface MarketplaceStrategy {
   isFollowing?: boolean;
   isLiked?: boolean;
   isSaved?: boolean;
+  visibility?: "PUBLIC" | "FRIENDS" | "PRIVATE";
 }
 
 export type OnboardingPayload = {
