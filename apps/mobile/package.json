@@ -11,7 +11,8 @@
     "eas:init": "eas init",
     "build:ios": "eas build --platform ios --profile production",
     "build:ios:preview": "eas build --platform ios --profile preview",
-    "submit:ios": "eas submit --platform ios --profile production --latest"
+    "submit:ios": "eas submit --platform ios --profile production --latest",
+    "submit:ios:retry": "eas submit --platform ios --profile production --id e4334a28-5553-4720-ae67-089ec17442a9"
   },
   "dependencies": {
     "@auxano/shared": "*",
