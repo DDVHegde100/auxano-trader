@@ -1,3 +1,4 @@
+import { useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -13,12 +14,15 @@ import {
 import { theme } from "@/src/lib/theme";
 import { useAppAuth, isDevAuthMode } from "@/src/hooks/useAuth";
 import { DEV_TEST_EMAIL, DEV_TEST_PASSWORD } from "@auxano/shared";
+import { OAuthButtons } from "@/src/components/OAuthButtons";
+import { BrandLogo } from "@/src/components/BrandLogo";
 
 export default function SignInScreen() {
   const router = useRouter();
   const auth = useAppAuth();
-  const [email, setEmail] = useState(DEV_TEST_EMAIL);
-  const [password, setPassword] = useState(DEV_TEST_PASSWORD);
+  const clerkSignIn = useSignIn();
+  const [email, setEmail] = useState(isDevAuthMode ? DEV_TEST_EMAIL : "");
+  const [password, setPassword] = useState(isDevAuthMode ? DEV_TEST_PASSWORD : "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -31,9 +35,25 @@ export default function SignInScreen() {
         router.replace("/(tabs)/dashboard");
         return;
       }
-      setError("Clerk mode: configure EXPO_PUBLIC_USE_DEV_AUTH=true for test login");
+      if (!clerkSignIn.isLoaded) return;
+      const attempt = await clerkSignIn.signIn.create({
+        identifier: email.trim(),
+        password,
+      });
+      if (attempt.status === "complete" && attempt.createdSessionId) {
+        await clerkSignIn.setActive({ session: attempt.createdSessionId });
+        router.replace("/(tabs)/dashboard");
+        return;
+      }
+      setError("Additional verification required. Check your email.");
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Sign in failed");
+      const msg =
+        e && typeof e === "object" && "errors" in e
+          ? (e as { errors: { message: string }[] }).errors?.[0]?.message
+          : e instanceof Error
+            ? e.message
+            : "Sign in failed";
+      setError(msg ?? "Sign in failed");
     } finally {
       setLoading(false);
     }
@@ -45,14 +65,12 @@ export default function SignInScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.card}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>A</Text>
-        </View>
+        <BrandLogo size="md" style={{ marginBottom: 16 }} />
         <Text style={styles.title}>Welcome to Auxano</Text>
         <Text style={styles.sub}>
           {isDevAuthMode
             ? "Test login (no Clerk setup required)"
-            : "Sign in to continue"}
+            : "Sign in to your paper account"}
         </Text>
 
         {isDevAuthMode ? (
@@ -89,16 +107,20 @@ export default function SignInScreen() {
           )}
         </Pressable>
 
-        {isDevAuthMode ? (
+        {!isDevAuthMode ? (
+          <>
+            <Text style={styles.or}>or continue with</Text>
+            <OAuthButtons onError={setError} />
+            <Link href="/(auth)/sign-up" asChild>
+              <Pressable style={styles.linkBtn}>
+                <Text style={styles.linkText}>Create account</Text>
+              </Pressable>
+            </Link>
+          </>
+        ) : (
           <Text style={styles.hint}>
             Password: Test1234! · $100k paper balance on first login
           </Text>
-        ) : (
-          <Link href="/(auth)/sign-up" asChild>
-            <Pressable style={styles.linkBtn}>
-              <Text style={styles.linkText}>Create account</Text>
-            </Pressable>
-          </Link>
         )}
       </View>
     </KeyboardAvoidingView>
@@ -119,18 +141,6 @@ const styles = StyleSheet.create({
     borderColor: theme.border,
     padding: 24,
   },
-  logo: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.border,
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "center",
-    marginBottom: 16,
-  },
-  logoText: { fontSize: 24, fontWeight: "700", color: theme.textPrimary },
   title: {
     fontSize: 24,
     fontWeight: "600",
@@ -167,6 +177,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   primaryText: { color: theme.background, fontWeight: "600", fontSize: 16 },
+  or: {
+    color: theme.textSecondary,
+    textAlign: "center",
+    marginTop: 16,
+    fontSize: 12,
+  },
   linkBtn: { marginTop: 16, alignItems: "center" },
   linkText: { color: theme.textSecondary },
   hint: { color: theme.textSecondary, fontSize: 12, textAlign: "center", marginTop: 16 },
