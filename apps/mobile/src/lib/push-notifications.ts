@@ -57,6 +57,15 @@ export async function registerForPushNotifications(
         pushEnabled: true,
       }),
     });
+    await apiFetch("/api/notifications/preferences", {
+      method: "PATCH",
+      token: authToken,
+      body: JSON.stringify({
+        pushEnabled: true,
+        notifyAutopilot: true,
+        notifyTrading: true,
+      }),
+    });
   }
 
   return pushToken.data;
