@@ -1,8 +1,10 @@
 import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
 import { useOAuth } from "@clerk/clerk-expo";
 import { useCallback, useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { theme } from "@/src/lib/theme";
+import { clerkErrorMessage } from "@/src/lib/clerk-errors";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -23,12 +25,15 @@ export function OAuthButtons({
       setBusy(strategy);
       onError("");
       try {
-        const { createdSessionId, setActive } = await hook.startOAuthFlow();
+        const redirectUrl = Linking.createURL("/");
+        const { createdSessionId, setActive } = await hook.startOAuthFlow({
+          redirectUrl,
+        });
         if (createdSessionId) {
           await setActive!({ session: createdSessionId });
         }
       } catch (e: unknown) {
-        onError(e instanceof Error ? e.message : "Sign in failed");
+        onError(clerkErrorMessage(e));
       } finally {
         setBusy(null);
       }

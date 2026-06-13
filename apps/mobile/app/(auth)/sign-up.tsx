@@ -8,10 +8,13 @@ import {
   Pressable,
   StyleSheet,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { theme } from "@/src/lib/theme";
 import { OAuthButtons } from "@/src/components/OAuthButtons";
 import { BrandLogo } from "@/src/components/BrandLogo";
+import { clerkErrorMessage, normalizeVerificationCode } from "@/src/lib/clerk-errors";
 
 export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
@@ -21,24 +24,20 @@ export default function SignUpScreen() {
   const [code, setCode] = useState("");
   const [pendingVerification, setPendingVerification] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resendMsg, setResendMsg] = useState("");
   const [error, setError] = useState("");
 
   async function onSignUp() {
     if (!isLoaded) return;
     setLoading(true);
     setError("");
+    setResendMsg("");
     try {
       await signUp.create({ emailAddress: email.trim(), password });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setPendingVerification(true);
     } catch (e: unknown) {
-      const msg =
-        e && typeof e === "object" && "errors" in e
-          ? (e as { errors: { message: string }[] }).errors?.[0]?.message
-          : e instanceof Error
-            ? e.message
-            : "Sign up failed";
-      setError(msg ?? "Sign up failed");
+      setError(clerkErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -46,25 +45,58 @@ export default function SignUpScreen() {
 
   async function onVerify() {
     if (!isLoaded) return;
+    const normalized = normalizeVerificationCode(code);
+    if (normalized.length < 6) {
+      setError("Enter the full 6-digit code from your email.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
-      if (result.status === "complete" && result.createdSessionId) {
-        await setActive({ session: result.createdSessionId });
+      const result = await signUp.attemptEmailAddressVerification({
+        code: normalized,
+      });
+
+      const sessionId =
+        result.createdSessionId ?? signUp.createdSessionId ?? null;
+
+      if (result.status === "complete" && sessionId) {
+        await setActive({ session: sessionId });
         router.replace("/onboarding");
         return;
       }
-      setError("Verification incomplete. Try again.");
+
+      if (sessionId) {
+        await setActive({ session: sessionId });
+        router.replace("/onboarding");
+        return;
+      }
+
+      setError("Verification incomplete. Check the code or request a new one.");
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Invalid code");
+      setError(clerkErrorMessage(e));
     } finally {
       setLoading(false);
     }
   }
 
+  async function onResend() {
+    if (!isLoaded) return;
+    setResendMsg("");
+    setError("");
+    try {
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setResendMsg("New code sent — check your inbox and spam folder.");
+    } catch (e: unknown) {
+      setError(clerkErrorMessage(e));
+    }
+  }
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <View style={styles.card}>
         <BrandLogo size="md" style={{ marginBottom: 16 }} />
         <Text style={styles.title}>Join Auxano</Text>
@@ -73,23 +105,41 @@ export default function SignUpScreen() {
         {pendingVerification ? (
           <>
             <Text style={styles.verifyHint}>
-              Enter the code sent to {email}
+              Enter the 6-digit code sent to{"\n"}
+              <Text style={styles.emailHighlight}>{email}</Text>
             </Text>
             <TextInput
-              style={styles.input}
-              placeholder="6-digit code"
+              style={[styles.input, styles.codeInput]}
+              placeholder="000000"
               placeholderTextColor={theme.textSecondary}
               keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              autoComplete="one-time-code"
+              maxLength={6}
               value={code}
-              onChangeText={setCode}
+              onChangeText={(t) => setCode(normalizeVerificationCode(t))}
             />
             {error ? <Text style={styles.error}>{error}</Text> : null}
+            {resendMsg ? <Text style={styles.success}>{resendMsg}</Text> : null}
             <Pressable style={styles.primaryBtn} onPress={onVerify} disabled={loading}>
               {loading ? (
                 <ActivityIndicator color="#111" />
               ) : (
                 <Text style={styles.primaryText}>Verify email</Text>
               )}
+            </Pressable>
+            <Pressable style={styles.linkBtn} onPress={onResend} disabled={loading}>
+              <Text style={styles.linkAccent}>Resend code</Text>
+            </Pressable>
+            <Pressable
+              style={styles.linkBtn}
+              onPress={() => {
+                setPendingVerification(false);
+                setCode("");
+                setError("");
+              }}
+            >
+              <Text style={styles.linkText}>Use a different email</Text>
             </Pressable>
           </>
         ) : (
@@ -100,6 +150,8 @@ export default function SignUpScreen() {
               placeholderTextColor={theme.textSecondary}
               autoCapitalize="none"
               keyboardType="email-address"
+              textContentType="emailAddress"
+              autoComplete="email"
               value={email}
               onChangeText={setEmail}
             />
@@ -108,6 +160,8 @@ export default function SignUpScreen() {
               placeholder="Password (8+ characters)"
               placeholderTextColor={theme.textSecondary}
               secureTextEntry
+              textContentType="newPassword"
+              autoComplete="password-new"
               value={password}
               onChangeText={setPassword}
             />
@@ -130,7 +184,7 @@ export default function SignUpScreen() {
           </Pressable>
         </Link>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -155,7 +209,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   sub: { color: theme.textSecondary, textAlign: "center", marginBottom: 24 },
-  verifyHint: { color: theme.textSecondary, textAlign: "center", marginBottom: 12, fontSize: 13 },
+  verifyHint: {
+    color: theme.textSecondary,
+    textAlign: "center",
+    marginBottom: 12,
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  emailHighlight: { color: theme.textPrimary, fontWeight: "600" },
+  codeInput: {
+    textAlign: "center",
+    fontSize: 24,
+    letterSpacing: 8,
+    fontWeight: "600",
+  },
   input: {
     backgroundColor: "rgba(255,255,255,0.04)",
     borderWidth: 1,
@@ -173,7 +240,9 @@ const styles = StyleSheet.create({
   },
   primaryText: { color: theme.background, fontWeight: "600" },
   or: { color: theme.textSecondary, textAlign: "center", marginTop: 16, fontSize: 12 },
-  linkBtn: { marginTop: 16, alignItems: "center" },
+  linkBtn: { marginTop: 12, alignItems: "center" },
   linkText: { color: theme.textSecondary },
-  error: { color: theme.loss, marginBottom: 8, fontSize: 13 },
+  linkAccent: { color: theme.accent, fontWeight: "600" },
+  error: { color: theme.loss, marginBottom: 8, fontSize: 13, textAlign: "center" },
+  success: { color: theme.success, marginBottom: 8, fontSize: 13, textAlign: "center" },
 });

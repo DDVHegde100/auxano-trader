@@ -16,13 +16,17 @@ import { useAppAuth, isDevAuthMode } from "@/src/hooks/useAuth";
 import { DEV_TEST_EMAIL, DEV_TEST_PASSWORD } from "@auxano/shared";
 import { OAuthButtons } from "@/src/components/OAuthButtons";
 import { BrandLogo } from "@/src/components/BrandLogo";
+import { clerkErrorMessage, normalizeVerificationCode } from "@/src/lib/clerk-errors";
 
 export default function SignInScreen() {
   const router = useRouter();
   const auth = useAppAuth();
-  const clerkSignIn = useSignIn();
+  const { signIn, setActive, isLoaded } = useSignIn();
   const [email, setEmail] = useState(isDevAuthMode ? DEV_TEST_EMAIL : "");
   const [password, setPassword] = useState(isDevAuthMode ? DEV_TEST_PASSWORD : "");
+  const [code, setCode] = useState("");
+  const [pendingVerify, setPendingVerify] = useState(false);
+  const [verifyMode, setVerifyMode] = useState<"first" | "second">("first");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -35,25 +39,88 @@ export default function SignInScreen() {
         router.replace("/(tabs)/dashboard");
         return;
       }
-      if (!clerkSignIn.isLoaded) return;
-      const attempt = await clerkSignIn.signIn.create({
+      if (!isLoaded) return;
+
+      const attempt = await signIn.create({
         identifier: email.trim(),
         password,
       });
+
       if (attempt.status === "complete" && attempt.createdSessionId) {
-        await clerkSignIn.setActive({ session: attempt.createdSessionId });
+        await setActive({ session: attempt.createdSessionId });
         router.replace("/(tabs)/dashboard");
         return;
       }
-      setError("Additional verification required. Check your email.");
+
+      if (attempt.status === "needs_first_factor") {
+        const emailFactor = attempt.supportedFirstFactors?.find(
+          (f) => f.strategy === "email_code"
+        );
+        if (emailFactor && "emailAddressId" in emailFactor) {
+          await signIn.prepareFirstFactor({
+            strategy: "email_code",
+            emailAddressId: emailFactor.emailAddressId,
+          });
+          setVerifyMode("first");
+          setPendingVerify(true);
+          return;
+        }
+      }
+
+      if (attempt.status === "needs_second_factor") {
+        const emailFactor = attempt.supportedSecondFactors?.find(
+          (f) => f.strategy === "email_code"
+        );
+        if (emailFactor && "emailAddressId" in emailFactor) {
+          await signIn.prepareSecondFactor({
+            strategy: "email_code",
+            emailAddressId: emailFactor.emailAddressId,
+          });
+          setVerifyMode("second");
+          setPendingVerify(true);
+          return;
+        }
+      }
+
+      setError("Sign in needs an extra step. Check your email or contact support.");
     } catch (e: unknown) {
-      const msg =
-        e && typeof e === "object" && "errors" in e
-          ? (e as { errors: { message: string }[] }).errors?.[0]?.message
-          : e instanceof Error
-            ? e.message
-            : "Sign in failed";
-      setError(msg ?? "Sign in failed");
+      setError(clerkErrorMessage(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onVerifySignIn() {
+    if (!isLoaded) return;
+    const normalized = normalizeVerificationCode(code);
+    if (normalized.length < 6) {
+      setError("Enter the full 6-digit code from your email.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const result =
+        verifyMode === "first"
+          ? await signIn.attemptFirstFactor({
+              strategy: "email_code",
+              code: normalized,
+            })
+          : await signIn.attemptSecondFactor({
+              strategy: "email_code",
+              code: normalized,
+            });
+
+      const sessionId = result.createdSessionId ?? signIn.createdSessionId;
+      if (result.status === "complete" && sessionId) {
+        await setActive({ session: sessionId });
+        router.replace("/(tabs)/dashboard");
+        return;
+      }
+
+      setError("Verification failed. Try again or resend from sign up.");
+    } catch (e: unknown) {
+      setError(clerkErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -68,9 +135,11 @@ export default function SignInScreen() {
         <BrandLogo size="md" style={{ marginBottom: 16 }} />
         <Text style={styles.title}>Welcome to Auxano</Text>
         <Text style={styles.sub}>
-          {isDevAuthMode
-            ? "Test login (no Clerk setup required)"
-            : "Sign in to your paper account"}
+          {pendingVerify
+            ? "Verify your email to continue"
+            : isDevAuthMode
+              ? "Test login (no Clerk setup required)"
+              : "Sign in to your paper account"}
         </Text>
 
         {isDevAuthMode ? (
@@ -79,48 +148,93 @@ export default function SignInScreen() {
           </View>
         ) : null}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor={theme.textSecondary}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor={theme.textSecondary}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-
-        <Pressable style={styles.primaryBtn} onPress={onSignIn} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#111" />
-          ) : (
-            <Text style={styles.primaryText}>Sign in</Text>
-          )}
-        </Pressable>
-
-        {!isDevAuthMode ? (
+        {pendingVerify ? (
           <>
-            <Text style={styles.or}>or continue with</Text>
-            <OAuthButtons onError={setError} />
-            <Link href="/(auth)/sign-up" asChild>
-              <Pressable style={styles.linkBtn}>
-                <Text style={styles.linkText}>Create account</Text>
-              </Pressable>
-            </Link>
+            <Text style={styles.verifyHint}>
+              Code sent to <Text style={styles.emailHighlight}>{email}</Text>
+            </Text>
+            <TextInput
+              style={[styles.input, styles.codeInput]}
+              placeholder="000000"
+              placeholderTextColor={theme.textSecondary}
+              keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={code}
+              onChangeText={(t) => setCode(normalizeVerificationCode(t))}
+            />
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            <Pressable style={styles.primaryBtn} onPress={onVerifySignIn} disabled={loading}>
+              {loading ? (
+                <ActivityIndicator color="#111" />
+              ) : (
+                <Text style={styles.primaryText}>Verify & sign in</Text>
+              )}
+            </Pressable>
+            <Pressable
+              style={styles.linkBtn}
+              onPress={() => {
+                setPendingVerify(false);
+                setCode("");
+                setError("");
+              }}
+            >
+              <Text style={styles.linkText}>Back to password sign in</Text>
+            </Pressable>
           </>
         ) : (
-          <Text style={styles.hint}>
-            Password: Test1234! · $100k paper balance on first login
-          </Text>
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor={theme.textSecondary}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              autoComplete="email"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor={theme.textSecondary}
+              secureTextEntry
+              textContentType="password"
+              autoComplete="password"
+              value={password}
+              onChangeText={setPassword}
+            />
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            <Pressable style={styles.primaryBtn} onPress={onSignIn} disabled={loading}>
+              {loading ? (
+                <ActivityIndicator color="#111" />
+              ) : (
+                <Text style={styles.primaryText}>Sign in</Text>
+              )}
+            </Pressable>
+            {!isDevAuthMode ? (
+              <>
+                <Link href="/(auth)/forgot-password" asChild>
+                  <Pressable style={styles.forgotBtn}>
+                    <Text style={styles.linkAccent}>Forgot password?</Text>
+                  </Pressable>
+                </Link>
+                <Text style={styles.or}>or continue with</Text>
+                <OAuthButtons onError={setError} />
+                <Link href="/(auth)/sign-up" asChild>
+                  <Pressable style={styles.linkBtn}>
+                    <Text style={styles.linkText}>Create account</Text>
+                  </Pressable>
+                </Link>
+              </>
+            ) : (
+              <Text style={styles.hint}>
+                Password: Test1234! · $100k paper balance on first login
+              </Text>
+            )}
+          </>
         )}
       </View>
     </KeyboardAvoidingView>
@@ -160,6 +274,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   devBadgeText: { color: theme.success, textAlign: "center", fontSize: 12 },
+  verifyHint: {
+    color: theme.textSecondary,
+    textAlign: "center",
+    marginBottom: 12,
+    fontSize: 13,
+  },
+  emailHighlight: { color: theme.textPrimary, fontWeight: "600" },
+  codeInput: {
+    textAlign: "center",
+    fontSize: 24,
+    letterSpacing: 8,
+    fontWeight: "600",
+  },
   input: {
     backgroundColor: "rgba(255,255,255,0.04)",
     borderWidth: 1,
@@ -177,6 +304,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   primaryText: { color: theme.background, fontWeight: "600", fontSize: 16 },
+  forgotBtn: { marginTop: 12, alignItems: "center" },
   or: {
     color: theme.textSecondary,
     textAlign: "center",
@@ -185,6 +313,7 @@ const styles = StyleSheet.create({
   },
   linkBtn: { marginTop: 16, alignItems: "center" },
   linkText: { color: theme.textSecondary },
+  linkAccent: { color: theme.accent, fontWeight: "600" },
   hint: { color: theme.textSecondary, fontSize: 12, textAlign: "center", marginTop: 16 },
-  error: { color: theme.loss, marginBottom: 8, fontSize: 13 },
+  error: { color: theme.loss, marginBottom: 8, fontSize: 13, textAlign: "center" },
 });
