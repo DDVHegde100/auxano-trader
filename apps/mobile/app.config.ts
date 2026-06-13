@@ -32,7 +32,6 @@ export default (_ctx: ConfigContext): ExpoConfig => ({
       NSPhotoLibraryUsageDescription:
         "Auxano does not access your photo library.",
     },
-    associatedDomains: ["applinks:auxano-red.vercel.app"],
   },
   android: {
     adaptiveIcon: {
