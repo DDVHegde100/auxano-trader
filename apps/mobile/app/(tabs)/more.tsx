@@ -1,6 +1,6 @@
 import { useAppAuth } from "@/src/hooks/useAuth";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   Pressable,
   Modal,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GlassCard } from "@/src/components/GlassCard";
@@ -41,22 +42,31 @@ export default function MoreScreen() {
   } | null>(null);
   const [showBt, setShowBt] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = useCallback(async () => {
+    apiFetch<typeof leaders>("/api/leaderboard").then(setLeaders);
+    try {
+      const token = await getToken();
+      const profile = await apiFetch<{ user?: { username?: string } }>(
+        "/api/user/profile",
+        { token: token ?? undefined }
+      );
+      setUsername(profile.user?.username ?? null);
+    } catch {
+      setUsername(null);
+    }
+  }, [getToken]);
 
   useEffect(() => {
-    apiFetch<typeof leaders>("/api/leaderboard").then(setLeaders);
-    (async () => {
-      try {
-        const token = await getToken();
-        const profile = await apiFetch<{ user?: { username?: string } }>(
-          "/api/user/profile",
-          { token: token ?? undefined }
-        );
-        setUsername(profile.user?.username ?? null);
-      } catch {
-        setUsername(null);
-      }
-    })();
-  }, []);
+    loadData();
+  }, [loadData]);
+
+  async function onRefresh() {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }
 
   async function runBacktest() {
     setBtLoading(true);
@@ -90,7 +100,12 @@ export default function MoreScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.success} />
+        }
+      >
         <View style={styles.headerRow}>
           <View style={styles.flex}>
             <Text style={styles.title}>More</Text>
@@ -192,6 +207,15 @@ export default function MoreScreen() {
         ))}
 
         <SectionHeader title="Account" />
+        <Pressable onPress={() => router.push("/legal/privacy")} style={styles.legalLink}>
+          <Text style={styles.legalText}>Privacy Policy</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/legal/terms")} style={styles.legalLink}>
+          <Text style={styles.legalText}>Terms of Service</Text>
+        </Pressable>
+        <Text style={styles.disclaimer}>
+          Paper trading only · simulated quotes · not financial advice
+        </Text>
         <PrimaryButton label="Sign out" onPress={() => signOut()} variant="danger" />
       </ScrollView>
 
@@ -281,6 +305,15 @@ const styles = StyleSheet.create({
   lbRank: { width: 32, color: theme.textSecondary, fontWeight: "700" },
   lbName: { flex: 1, color: theme.textPrimary, fontWeight: "500" },
   lbScore: { color: theme.textSecondary, fontSize: 13 },
+  legalLink: { paddingVertical: 10 },
+  legalText: { color: theme.accent, fontSize: 15 },
+  disclaimer: {
+    color: theme.textSecondary,
+    fontSize: 11,
+    textAlign: "center",
+    marginVertical: 16,
+    lineHeight: 16,
+  },
 });
 
 const modalStyles = StyleSheet.create({

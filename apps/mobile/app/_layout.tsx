@@ -34,6 +34,8 @@ function AppStack() {
         <Stack.Screen name="strategy/[slug]" />
         <Stack.Screen name="notifications" />
         <Stack.Screen name="compete" />
+        <Stack.Screen name="legal/privacy" />
+        <Stack.Screen name="legal/terms" />
       </Stack>
     </>
   );
