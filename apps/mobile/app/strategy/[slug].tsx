@@ -98,15 +98,19 @@ export default function StrategyDetailScreen() {
     setMsg("Comment posted");
   }
 
-  async function deploy() {
+  async function deploy(withAutopilot: boolean) {
     const token = await getToken();
     await apiFetch(`/api/strategies/${slug}/deploy`, {
       method: "POST",
       token: token ?? undefined,
-      body: JSON.stringify({ allocated: 15000 }),
+      body: JSON.stringify({ allocated: 15000, autopilot: withAutopilot }),
     });
-    setMsg("Strategy deployed to your paper account");
-    router.push("/(tabs)/dashboard");
+    setMsg(
+      withAutopilot
+        ? "Deployed with autopilot — check Bots tab"
+        : "Strategy deployed to your paper account"
+    );
+    router.push(withAutopilot ? "/(tabs)/bots" : "/(tabs)/dashboard");
   }
 
   if (!data) {
@@ -225,9 +229,15 @@ export default function StrategyDetailScreen() {
         )}
 
         <PrimaryButton
-          label="Deploy simulation (paper)"
-          onPress={deploy}
+          label="Deploy paper simulation"
+          onPress={() => deploy(false)}
           variant="primary"
+        />
+        <PrimaryButton
+          label="Deploy + autopilot bot"
+          onPress={() => deploy(true)}
+          variant="success"
+          style={{ marginTop: 10 }}
         />
         {msg ? <Text style={styles.msg}>{msg}</Text> : null}
       </ScrollView>
