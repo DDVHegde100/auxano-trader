@@ -15,6 +15,7 @@ import { PrimaryButton } from "@/src/components/PrimaryButton";
 import { theme } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { useAppAuth } from "@/src/hooks/useAuth";
+import { PaperDisclaimerBanner } from "@/src/components/PaperDisclaimerBanner";
 
 type BotRow = {
   id: string;
@@ -86,6 +87,7 @@ export default function BotsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        <PaperDisclaimerBanner compact />
         <Text style={styles.title}>Bots</Text>
         <Text style={styles.sub}>
           Autopilot runs your deployed strategies on a schedule

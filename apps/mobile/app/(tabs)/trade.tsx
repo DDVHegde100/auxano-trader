@@ -22,6 +22,8 @@ import { apiFetch } from "@/src/lib/api";
 import { formatUsd, formatPct, formatTime } from "@/src/lib/format";
 import { usePolling } from "@/src/hooks/usePolling";
 import { getPresetById } from "@auxano/shared";
+import * as Haptics from "expo-haptics";
+import { PaperDisclaimerBanner } from "@/src/components/PaperDisclaimerBanner";
 
 interface QuoteDetail {
   symbol: string;
@@ -153,9 +155,11 @@ export default function TradeScreen() {
           : "";
       setMsg(`${side} filled @ ${formatUsd(res.price)}${extra}`);
       setAmountUsd("");
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await loadDetail();
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Order failed");
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setBusy(false);
     }
@@ -209,6 +213,7 @@ export default function TradeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.scroll}>
+        <PaperDisclaimerBanner compact />
         <Text style={styles.title}>Paper Trade</Text>
         <Text style={styles.sub}>
           Live simulated prices · Buying power {formatUsd(cash)}
