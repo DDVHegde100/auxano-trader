@@ -151,13 +151,25 @@ Or: [expo.dev](https://expo.dev) → **auxano** → latest iOS build → **Submi
 
 | Step | Done? |
 |------|--------|
-| Team ID in `eas.json` | ☐ |
-| App Store Connect app created (`app.auxano.mobile`) | ☐ |
-| `ascAppId` in `eas.json` | ☐ |
-| Clerk `pk_*` in `.env.production` + EAS env | ☐ |
-| Clerk allows `auxano://` + Vercel URL | ☐ |
-| `eas init` completed | ☐ |
-| `npm run mobile:build:ios:preview` succeeded | ☐ |
+| Team ID in `eas.json` | ☑ |
+| App Store Connect app created (`app.auxano.mobile`) | ☑ |
+| `ascAppId` in `eas.json` | ☑ |
+| Clerk `pk_*` in `.env.production` + EAS env | ☑ |
+| Clerk allows `auxano://` + Vercel URL | ☐ verify in dashboard |
+| Mobile Clerk sign-in (email + OAuth) | ☑ |
+| `eas init` completed | ☑ |
+| iOS build 1.0.0 (5+) with `image: latest` | ☑ build 5 |
+| Submit to App Store Connect | ☐ retry `npm run submit:ios` or Transporter |
 | TestFlight internal group + tester added | ☐ |
+| Export compliance answered in ASC | ☐ |
+| 6.7" screenshots uploaded | ☐ see `scripts/capture-app-store-screenshots.md` |
+
+**Build 6** (includes auth, onboarding, legal):
+
+```bash
+cd apps/mobile
+npm run build:ios
+npm run submit:ios
+```
 
 See also [MOBILE_EAS.md](./MOBILE_EAS.md).
