@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Pressable,
   Modal,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GlassCard } from "@/src/components/GlassCard";
@@ -44,6 +45,7 @@ export default function MarketplaceScreen() {
   const [category, setCategory] = useState("ALL");
   const [ratingModal, setRatingModal] = useState<LaymanDetail | null>(null);
   const [msg, setMsg] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     const token = await getToken();
@@ -66,6 +68,12 @@ export default function MarketplaceScreen() {
     load().finally(() => setLoading(false));
   }, [load]);
 
+  async function onRefresh() {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }
+
   function addPresetToTrading(preset: PresetPreview) {
     setMsg(`${preset.name} added — choose an allowed symbol in Trade.`);
     router.push({
@@ -85,7 +93,12 @@ export default function MarketplaceScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.success} />
+        }
+      >
         <Text style={styles.title}>Algorithms</Text>
         <Text style={styles.sub}>
           Ready-made strategies for non-coders · rated 0–100 in plain English

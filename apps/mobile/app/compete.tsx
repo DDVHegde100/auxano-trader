@@ -7,6 +7,7 @@ import {
   Pressable,
   TextInput,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -46,6 +47,7 @@ export default function CompeteScreen() {
   const [duels, setDuels] = useState<DuelSummary[]>([]);
   const [opponent, setOpponent] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -65,6 +67,12 @@ export default function CompeteScreen() {
   useEffect(() => {
     load();
   }, []);
+
+  async function onRefresh() {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }
 
   async function createDuel() {
     const token = await getToken();
@@ -89,7 +97,12 @@ export default function CompeteScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.success} />
+        }
+      >
         <Pressable onPress={() => router.back()}>
           <Text style={styles.back}>← Back</Text>
         </Pressable>
