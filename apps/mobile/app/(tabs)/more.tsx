@@ -26,7 +26,7 @@ import { NotificationBell } from "@/src/components/NotificationBell";
 const SYMBOLS = ["AAPL", "NVDA", "MSFT", "TSLA", "GOOGL"];
 
 export default function MoreScreen() {
-  const { signOut, getToken } = useAppAuth();
+  const { getToken } = useAppAuth();
   const router = useRouter();
   const [leaders, setLeaders] = useState<{
     topStrategies: { name: string; quantScore: number; slug: string }[];
@@ -207,16 +207,21 @@ export default function MoreScreen() {
         ))}
 
         <SectionHeader title="Account" />
+        <Pressable onPress={() => router.push("/settings")} style={{ marginBottom: 12 }}>
+          <GlassCard style={styles.deployRow}>
+            <View style={styles.flex}>
+              <Text style={styles.deployName}>Settings</Text>
+              <Text style={styles.deployTag}>Profile, security, legal, sign out</Text>
+            </View>
+            <Text style={styles.deployArrow}>→</Text>
+          </GlassCard>
+        </Pressable>
         <Pressable onPress={() => router.push("/legal/privacy")} style={styles.legalLink}>
           <Text style={styles.legalText}>Privacy Policy</Text>
         </Pressable>
         <Pressable onPress={() => router.push("/legal/terms")} style={styles.legalLink}>
           <Text style={styles.legalText}>Terms of Service</Text>
         </Pressable>
-        <Text style={styles.disclaimer}>
-          Paper trading only · simulated quotes · not financial advice
-        </Text>
-        <PrimaryButton label="Sign out" onPress={() => signOut()} variant="danger" />
       </ScrollView>
 
       <Modal visible={showBt} animationType="slide" transparent>
