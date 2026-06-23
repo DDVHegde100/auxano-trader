@@ -32,6 +32,7 @@ function AppStack() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="strategy/[slug]" />
+        <Stack.Screen name="settings" />
         <Stack.Screen name="notifications" />
         <Stack.Screen name="compete" />
         <Stack.Screen name="legal/privacy" />
@@ -68,22 +69,33 @@ export default function RootLayout() {
     return <View style={{ flex: 1, backgroundColor: colors.background }} />;
   }
 
-  const content = USE_DEV_AUTH ? (
-    <DevAuthProvider>
-      <AppStack />
-    </DevAuthProvider>
-  ) : (
-    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <ClerkLoaded>
-        <PushRegistration />
-        <AppStack />
-      </ClerkLoaded>
-    </ClerkProvider>
-  );
+  if (USE_DEV_AUTH) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }} onLayout={onLayout}>
+        <DevAuthProvider>
+          <AppStack />
+        </DevAuthProvider>
+      </View>
+    );
+  }
+
+  if (!publishableKey) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", alignItems: "center", padding: 24 }}>
+        {/* eslint-disable-next-line react-native/no-inline-styles */}
+        <StatusBar style="light" />
+      </View>
+    );
+  }
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayout}>
-      {content}
+    <View style={{ flex: 1, backgroundColor: colors.background }} onLayout={onLayout}>
+      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+        <ClerkLoaded>
+          <PushRegistration />
+          <AppStack />
+        </ClerkLoaded>
+      </ClerkProvider>
     </View>
   );
 }

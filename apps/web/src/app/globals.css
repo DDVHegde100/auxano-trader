@@ -3,6 +3,13 @@
 @import "../../../../packages/ui/src/auxano-system.css";
 @import "../styles/pages.css";
 
+html,
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  min-height: 100%;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

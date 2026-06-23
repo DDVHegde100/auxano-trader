@@ -1,7 +1,9 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { View, Text } from "react-native";
+import { useEffect } from "react";
 import { ApiStatusBanner } from "@/src/components/ApiStatusBanner";
 import { colors, tabBar, fontFamily } from "@/src/styles/design-system";
+import { useAppAuth } from "@/src/hooks/useAuth";
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   return (
@@ -18,6 +20,19 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
 }
 
 export default function TabsLayout() {
+  const { isLoaded, isSignedIn } = useAppAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.replace("/(auth)/sign-in");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <View style={{ flex: 1, backgroundColor: colors.background }} />;
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <ApiStatusBanner />

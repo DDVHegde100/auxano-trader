@@ -4,12 +4,17 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
-import { SignIn } from "@clerk/nextjs";
+import dynamic from "next/dynamic";
 import { ClearSignupOnboardingCookie } from "@/components/auth/clear-signup-cookie";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const DEV_MODE = process.env.NEXT_PUBLIC_ALLOW_DEV_AUTH === "true";
+
+const ClerkSignIn = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.SignIn),
+  { ssr: false, loading: () => null }
+);
 
 function SignInContent() {
   const router = useRouter();
@@ -99,28 +104,28 @@ function SignInContent() {
           </form>
         ) : (
           <>
-          <ClearSignupOnboardingCookie />
-          <SignIn
-            routing="path"
-            path="/sign-in"
-            signUpUrl="/sign-up"
-            forceRedirectUrl="/dashboard"
-            appearance={{
-              variables: {
-                colorBackground: "#2a1a0e",
-                colorInputBackground: "rgba(26, 18, 9, 0.6)",
-                colorInputText: "#ffedd8",
-                colorText: "#ffedd8",
-                colorTextSecondary: "#e7bc91",
-                colorPrimary: "#bc8a5f",
-                borderRadius: "12px",
-              },
-              elements: {
-                card: "aux-card shadow-[var(--shadow-lg)]",
-                formButtonPrimary: "aux-btn-primary",
-              },
-            }}
-          />
+            <ClearSignupOnboardingCookie />
+            <ClerkSignIn
+              routing="path"
+              path="/sign-in"
+              signUpUrl="/sign-up"
+              forceRedirectUrl="/dashboard"
+              appearance={{
+                variables: {
+                  colorBackground: "#2a1a0e",
+                  colorInputBackground: "rgba(26, 18, 9, 0.6)",
+                  colorInputText: "#ffedd8",
+                  colorText: "#ffedd8",
+                  colorTextSecondary: "#e7bc91",
+                  colorPrimary: "#bc8a5f",
+                  borderRadius: "12px",
+                },
+                elements: {
+                  card: "aux-card shadow-[var(--shadow-lg)]",
+                  formButtonPrimary: "aux-btn-primary",
+                },
+              }}
+            />
           </>
         )}
       </div>
@@ -128,9 +133,17 @@ function SignInContent() {
   );
 }
 
+function SignInFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[var(--background)]">
+      <p className="text-muted">Loading sign in…</p>
+    </div>
+  );
+}
+
 export default function SignInPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<SignInFallback />}>
       <SignInContent />
     </Suspense>
   );

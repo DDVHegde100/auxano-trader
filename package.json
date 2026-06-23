@@ -12,6 +12,8 @@
     "expo": "cd apps/mobile && npx expo start --clear --lan",
     "fix:db": "bash scripts/fix-database.sh",
     "test:db": "node scripts/test-db.mjs",
+    "test:auth": "node scripts/test-auth-local.mjs",
+    "fix:web": "rm -rf apps/web/.next",
     "dev": "npm run dev --workspace=@auxano/web",
     "dev:web": "npm run dev --workspace=@auxano/web",
     "dev:mobile": "npm run start --workspace=@auxano/mobile",

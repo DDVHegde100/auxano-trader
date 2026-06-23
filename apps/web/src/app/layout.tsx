@@ -33,12 +33,10 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const useDevAuth = process.env.ALLOW_DEV_AUTH === "true";
-
   return (
     <html lang="en" className={anaheim.variable}>
       <body className={`${anaheim.className} antialiased`}>
-        <AppProviders devAuth={useDevAuth}>{children}</AppProviders>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

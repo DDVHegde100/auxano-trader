@@ -9,6 +9,8 @@ export async function getSessionClerkId(): Promise<string | null> {
       const clerkId = verifyDevToken(token);
       if (clerkId) return clerkId;
     }
+    // Mobile/API clients use Bearer dev tokens — resolved in resolveClerkId(req).
+    return null;
   }
 
   const session = await auth();
