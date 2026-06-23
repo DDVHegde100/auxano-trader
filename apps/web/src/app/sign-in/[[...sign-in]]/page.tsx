@@ -75,7 +75,7 @@ function SignInContent() {
 
         {DEV_MODE ? (
           <form onSubmit={devSignIn} className="aux-card space-y-4">
-            <p className="text-center aux-caption">Local dev · paper trading only</p>
+            <p className="text-center aux-caption">Paper trading · $100k virtual capital</p>
             <Input
               type="email"
               value={email}

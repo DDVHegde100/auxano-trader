@@ -4,7 +4,13 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function DevUserMenu({ email }: { email: string }) {
+export function DevUserMenu({
+  email,
+  compact = false,
+}: {
+  email: string;
+  compact?: boolean;
+}) {
   const router = useRouter();
 
   async function signOut() {
@@ -13,9 +19,32 @@ export function DevUserMenu({ email }: { email: string }) {
     router.refresh();
   }
 
+  if (compact) {
+    return (
+      <div className="flex items-center gap-1">
+        <div
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--accent-muted)] text-sm text-accent"
+          title={email}
+        >
+          {email[0]?.toUpperCase() ?? "T"}
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={signOut}
+          aria-label="Sign out"
+          className="h-9 w-9 p-0"
+        >
+          <LogOut className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--accent-muted)] px-3 py-2">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent-muted)] text-sm font-normal text-accent">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-muted)] text-sm font-normal text-accent">
         {email[0]?.toUpperCase() ?? "T"}
       </div>
       <div className="min-w-0 flex-1">

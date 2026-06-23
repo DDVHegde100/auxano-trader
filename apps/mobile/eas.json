@@ -24,7 +24,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://auxano-red.vercel.app",
-        "EXPO_PUBLIC_USE_DEV_AUTH": "false"
+        "EXPO_PUBLIC_USE_DEV_AUTH": "false",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bWFqb3ItZHVjay05MS5jbGVyay5hY2NvdW50cy5kZXYk"
       }
     },
     "production": {
@@ -37,7 +38,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://auxano-red.vercel.app",
-        "EXPO_PUBLIC_USE_DEV_AUTH": "false"
+        "EXPO_PUBLIC_USE_DEV_AUTH": "false",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bWFqb3ItZHVjay05MS5jbGVyay5hY2NvdW50cy5kZXYk"
       }
     }
   },

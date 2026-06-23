@@ -16,6 +16,8 @@ import { GlassCard } from "@/src/components/GlassCard";
 import { PRESET_ALGORITHMS } from "@auxano/shared";
 import { apiFetch } from "@/src/lib/api";
 import { useAppAuth } from "@/src/hooks/useAuth";
+import { useRequireAuth } from "@/src/hooks/useRequireAuth";
+import { AuthLoadingScreen } from "@/src/components/AuthLoadingScreen";
 
 const EXPERIENCE = [
   { value: "BEGINNER", label: "Beginner", desc: "New to investing" },
@@ -40,6 +42,7 @@ const GOALS = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const authed = useRequireAuth();
   const { getToken } = useAppAuth();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -73,6 +76,8 @@ export default function OnboardingScreen() {
       setLoading(false);
     }
   }
+
+  if (!authed) return <AuthLoadingScreen />;
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>

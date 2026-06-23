@@ -15,11 +15,14 @@ import { PrimaryButton } from "@/src/components/PrimaryButton";
 import { theme } from "@/src/lib/theme";
 import { useNotifications } from "@/src/hooks/useNotifications";
 import { useAppAuth } from "@/src/hooks/useAuth";
+import { useRequireAuth } from "@/src/hooks/useRequireAuth";
+import { AuthLoadingScreen } from "@/src/components/AuthLoadingScreen";
 import { registerForPushNotifications } from "@/src/lib/push-notifications";
 import { apiFetch } from "@/src/lib/api";
 
 export default function NotificationsScreen() {
   const router = useRouter();
+  const authed = useRequireAuth();
   const { getToken } = useAppAuth();
   const { items, unreadCount, loading, markAllRead, refresh } = useNotifications();
   const [pushOn, setPushOn] = useState(true);
@@ -50,6 +53,8 @@ export default function NotificationsScreen() {
       Alert.alert("Error", "Could not register for push on this device.");
     }
   }
+
+  if (!authed) return <AuthLoadingScreen />;
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>

@@ -18,6 +18,8 @@ import { theme } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { formatPct } from "@/src/lib/format";
 import { useAppAuth } from "@/src/hooks/useAuth";
+import { useRequireAuth } from "@/src/hooks/useRequireAuth";
+import { AuthLoadingScreen } from "@/src/components/AuthLoadingScreen";
 
 type LeagueSummary = {
   id: string;
@@ -42,6 +44,7 @@ type DuelSummary = {
 
 export default function CompeteScreen() {
   const router = useRouter();
+  const authed = useRequireAuth();
   const { getToken } = useAppAuth();
   const [leagues, setLeagues] = useState<LeagueSummary[]>([]);
   const [duels, setDuels] = useState<DuelSummary[]>([]);
@@ -94,6 +97,8 @@ export default function CompeteScreen() {
       Alert.alert("Error", e instanceof Error ? e.message : "Failed");
     }
   }
+
+  if (!authed) return <AuthLoadingScreen />;
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>

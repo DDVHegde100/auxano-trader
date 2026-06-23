@@ -19,6 +19,17 @@ npm start
 # Save as 1290×2796 PNG (native resolution)
 ```
 
+## Option A2 — Automated (no Xcode required)
+
+From repo root (local API must be running with dev auth):
+
+```bash
+cd apps/web && npm run dev:clean   # terminal 1
+cd ../.. && npm run screenshots    # terminal 2
+```
+
+Output: `apps/mobile/app-store-screenshots/6.7-inch/*.png` (1290×2796)
+
 ### Suggested screens (6 shots)
 
 1. **Dashboard** — portfolio value + live quotes

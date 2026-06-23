@@ -14,6 +14,7 @@ import {
 import { theme } from "@/src/lib/theme";
 import { BrandLogo } from "@/src/components/BrandLogo";
 import { clerkErrorMessage, normalizeVerificationCode } from "@/src/lib/clerk-errors";
+import { LegalFooter } from "@/src/components/LegalFooter";
 
 export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
@@ -180,6 +181,7 @@ export default function SignUpScreen() {
             <Text style={styles.linkText}>Already have an account?</Text>
           </Pressable>
         </Link>
+        <LegalFooter />
       </View>
     </KeyboardAvoidingView>
   );

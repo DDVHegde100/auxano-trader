@@ -16,6 +16,7 @@ import { useAppAuth, isDevAuthMode } from "@/src/hooks/useAuth";
 import { DEV_TEST_EMAIL, DEV_TEST_PASSWORD } from "@auxano/shared";
 import { BrandLogo } from "@/src/components/BrandLogo";
 import { clerkErrorMessage, normalizeVerificationCode } from "@/src/lib/clerk-errors";
+import { LegalFooter } from "@/src/components/LegalFooter";
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -234,6 +235,7 @@ export default function SignInScreen() {
           </>
         )}
       </View>
+      <LegalFooter />
     </KeyboardAvoidingView>
   );
 }

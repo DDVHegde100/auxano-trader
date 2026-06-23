@@ -17,6 +17,8 @@ import { PrimaryButton } from "@/src/components/PrimaryButton";
 import { theme } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { useAppAuth, isDevAuthMode } from "@/src/hooks/useAuth";
+import { useRequireAuth } from "@/src/hooks/useRequireAuth";
+import { AuthLoadingScreen } from "@/src/components/AuthLoadingScreen";
 import { DEV_TEST_EMAIL } from "@auxano/shared";
 
 function useClerkUserSafe() {
@@ -34,6 +36,7 @@ type ProfileUser = {
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const authed = useRequireAuth();
   const { signOut, getToken } = useAppAuth();
   const clerkUser = useClerkUserSafe();
   const [profile, setProfile] = useState<ProfileUser | null>(null);
@@ -74,6 +77,8 @@ export default function SettingsScreen() {
     profile?.name ?? clerkUser?.fullName ?? profile?.username ?? "Account";
   const username = profile?.username ? `@${profile.username}` : null;
   const appVersion = Constants.expoConfig?.version ?? "1.0.0";
+
+  if (!authed) return <AuthLoadingScreen />;
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>

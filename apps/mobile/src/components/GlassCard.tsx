@@ -1,4 +1,4 @@
-import { View, StyleSheet, type ViewStyle } from "react-native";
+import { View, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import { cards } from "@/src/styles/design-system";
 
 export function GlassCard({
@@ -7,7 +7,7 @@ export function GlassCard({
   glow,
 }: {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   glow?: boolean;
 }) {
   return (

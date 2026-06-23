@@ -62,13 +62,15 @@ All prices and trades are simulated. Auxano is for education and entertainment �
 
 ## Screenshots
 
-See `scripts/capture-app-store-screenshots.md` for 6.7" iPhone capture guide.
+See `scripts/capture-app-store-screenshots.md` for capture guide.
+
+**Ready PNGs:** `apps/mobile/app-store-screenshots/6.7-inch/` (8 files, 1290×2796).
 
 ## Review notes (for Apple)
 
 ```
 Auxano is a paper-trading simulator. No real money, brokerage, or live trading.
-Sign in with email/password or Apple/Google via Clerk.
-Test account can be created in-app (sign up). All market data is delayed/simulated.
+Sign in with email and password via Clerk. Create a test account in-app (Sign up).
+All market data is simulated or delayed for education. Autopilot runs on our server.
 Export compliance: app uses only standard HTTPS — exempt encryption declaration is false.
 ```

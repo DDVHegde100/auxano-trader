@@ -1,5 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAppAuth } from "@/src/hooks/useAuth";
+import { useRequireAuth } from "@/src/hooks/useRequireAuth";
+import { AuthLoadingScreen } from "@/src/components/AuthLoadingScreen";
 import { useEffect, useState } from "react";
 import {
   View,
@@ -21,6 +23,7 @@ import { formatPct } from "@/src/lib/format";
 
 export default function StrategyDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
+  const authed = useRequireAuth();
   const { getToken } = useAppAuth();
   const router = useRouter();
   const [data, setData] = useState<Record<string, unknown> | null>(null);
@@ -112,6 +115,8 @@ export default function StrategyDetailScreen() {
     );
     router.push(withAutopilot ? "/(tabs)/bots" : "/(tabs)/dashboard");
   }
+
+  if (!authed) return <AuthLoadingScreen />;
 
   if (!data) {
     return (

@@ -661,15 +661,102 @@ body {
 .aux-app-shell {
   min-height: 100dvh;
   background: var(--background);
+  --mobile-topbar-height: 3.75rem;
+  --mobile-tabbar-height: 4.75rem;
+}
+
+.aux-mobile-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  padding-top: max(var(--space-3), env(safe-area-inset-top, 0px));
+  min-height: var(--mobile-topbar-height);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--surface-overlay);
+  backdrop-filter: blur(24px);
+}
+
+.aux-mobile-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  text-decoration: none;
+}
+
+.aux-mobile-tabbar {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+  padding: var(--space-2) var(--space-1);
+  padding-bottom: max(var(--space-2), env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .aux-mobile-tabbar {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: unset;
+    padding: var(--space-4);
+    padding-bottom: var(--space-4);
+  }
+
+  .aux-mobile-tab {
+    display: none;
+  }
+}
+
+.aux-mobile-tab {
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-1);
+  min-height: 3.25rem;
+  font-size: 0.625rem;
+  text-align: center;
+}
+
+.aux-mobile-tab-label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.1;
+}
+
+@media (min-width: 768px) {
+  .aux-mobile-tabbar > .aux-nav-item:not(.aux-mobile-tab) {
+    display: flex;
+  }
+
+  .aux-mobile-tabbar > .aux-mobile-tab {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .aux-mobile-tabbar > .aux-nav-item:not(.aux-mobile-tab) {
+    display: none;
+  }
 }
 
 .aux-app-main {
-  padding-bottom: 6rem;
+  padding-top: calc(var(--mobile-topbar-height) + var(--space-4));
+  padding-bottom: calc(var(--mobile-tabbar-height) + var(--space-4));
 }
 
 @media (min-width: 768px) {
   .aux-app-main {
     margin-left: var(--sidebar-width);
+    padding-top: var(--page-padding-y, var(--space-8));
     padding-bottom: var(--space-8);
   }
 }
