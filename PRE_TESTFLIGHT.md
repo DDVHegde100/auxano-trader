@@ -20,7 +20,7 @@ Ship the current build first; these are the best next wins for a polished v1.
 - [x] EAS `image: latest` (Xcode 26.4 / iOS 26 SDK)
 - [x] Clerk `pk_*` on EAS + `.env.production`
 - [x] API `https://auxano-red.vercel.app`
-- [x] Clerk email/password + OAuth sign-in on mobile
+- [x] Clerk email/password sign-in on mobile (OAuth removed)
 - [x] Onboarding → deploy first bot flow
 - [x] Legal pages (web `/privacy`, `/terms` + mobile)
 - [x] Build **1.0.0 (5)** succeeded with new icon/SDK

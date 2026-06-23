@@ -14,7 +14,6 @@ import {
 import { theme } from "@/src/lib/theme";
 import { useAppAuth, isDevAuthMode } from "@/src/hooks/useAuth";
 import { DEV_TEST_EMAIL, DEV_TEST_PASSWORD } from "@auxano/shared";
-import { OAuthButtons } from "@/src/components/OAuthButtons";
 import { BrandLogo } from "@/src/components/BrandLogo";
 import { clerkErrorMessage, normalizeVerificationCode } from "@/src/lib/clerk-errors";
 
@@ -221,8 +220,6 @@ export default function SignInScreen() {
                     <Text style={styles.linkAccent}>Forgot password?</Text>
                   </Pressable>
                 </Link>
-                <Text style={styles.or}>or continue with</Text>
-                <OAuthButtons onError={setError} />
                 <Link href="/(auth)/sign-up" asChild>
                   <Pressable style={styles.linkBtn}>
                     <Text style={styles.linkText}>Create account</Text>
@@ -305,12 +302,6 @@ const styles = StyleSheet.create({
   },
   primaryText: { color: theme.background, fontWeight: "600", fontSize: 16 },
   forgotBtn: { marginTop: 12, alignItems: "center" },
-  or: {
-    color: theme.textSecondary,
-    textAlign: "center",
-    marginTop: 16,
-    fontSize: 12,
-  },
   linkBtn: { marginTop: 16, alignItems: "center" },
   linkText: { color: theme.textSecondary },
   linkAccent: { color: theme.accent, fontWeight: "600" },

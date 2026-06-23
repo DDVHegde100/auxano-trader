@@ -12,7 +12,6 @@ import {
   Platform,
 } from "react-native";
 import { theme } from "@/src/lib/theme";
-import { OAuthButtons } from "@/src/components/OAuthButtons";
 import { BrandLogo } from "@/src/components/BrandLogo";
 import { clerkErrorMessage, normalizeVerificationCode } from "@/src/lib/clerk-errors";
 
@@ -173,8 +172,6 @@ export default function SignUpScreen() {
                 <Text style={styles.primaryText}>Create account</Text>
               )}
             </Pressable>
-            <Text style={styles.or}>or continue with</Text>
-            <OAuthButtons onError={setError} />
           </>
         )}
 
@@ -239,8 +236,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   primaryText: { color: theme.background, fontWeight: "600" },
-  or: { color: theme.textSecondary, textAlign: "center", marginTop: 16, fontSize: 12 },
-  linkBtn: { marginTop: 12, alignItems: "center" },
+  linkBtn: { marginTop: 16, alignItems: "center" },
   linkText: { color: theme.textSecondary },
   linkAccent: { color: theme.accent, fontWeight: "600" },
   error: { color: theme.loss, marginBottom: 8, fontSize: 13, textAlign: "center" },

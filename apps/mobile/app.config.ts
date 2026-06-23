@@ -27,8 +27,6 @@ export default (_ctx: ConfigContext): ExpoConfig => ({
       CFBundleDisplayName: "Auxano",
       NSUserTrackingUsageDescription:
         "Auxano does not track you across other apps. This permission is not used.",
-      NSCameraUsageDescription:
-        "Auxano does not use the camera. This may be requested by sign-in providers.",
       NSPhotoLibraryUsageDescription:
         "Auxano does not access your photo library.",
     },

@@ -63,7 +63,8 @@ EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxx
    - Allowed redirect / origins include:
      - `https://auxano-red.vercel.app`
      - `auxano://` (mobile deep link scheme)
-5. If web sign-in broke after `vercel link`, restore web keys in **`apps/web/.env.local`** from Clerk (Publishable + Secret) or Vercel → Project → Settings → Environment Variables.
+5. **Configure** → **Social connections** → disable **Apple** and **Google** (mobile uses email + password only).
+6. If web sign-in broke after `vercel link`, restore web keys in **`apps/web/.env.local`** from Clerk (Publishable + Secret) or Vercel → Project → Settings → Environment Variables.
 
 ---
 
@@ -156,7 +157,7 @@ Or: [expo.dev](https://expo.dev) → **auxano** → latest iOS build → **Submi
 | `ascAppId` in `eas.json` | ☑ |
 | Clerk `pk_*` in `.env.production` + EAS env | ☑ |
 | Clerk allows `auxano://` + Vercel URL | ☐ verify in dashboard |
-| Mobile Clerk sign-in (email + OAuth) | ☑ |
+| Mobile Clerk sign-in (email + password) | ☑ |
 | `eas init` completed | ☑ |
 | iOS build 1.0.0 (5+) with `image: latest` | ☑ build 5 |
 | Submit to App Store Connect | ☐ retry `npm run submit:ios` or Transporter |
