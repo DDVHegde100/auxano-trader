@@ -64,7 +64,12 @@ All prices and trades are simulated. Auxano is for education and entertainment �
 
 See `scripts/capture-app-store-screenshots.md` for capture guide.
 
-**Ready PNGs:** `apps/mobile/app-store-screenshots/6.7-inch/` (8 files, 1290×2796).
+**Ready PNGs:**
+
+- `apps/mobile/app-store-screenshots/6.5-inch/` — **8 files, 1284×2778** (use for 6.5" slot in App Store Connect)
+- `apps/mobile/app-store-screenshots/6.7-inch/` — 8 files, 1290×2796
+
+Full copy/paste form: **`APP_STORE_CONNECT_FORM.md`**
 
 ## Review notes (for Apple)
 

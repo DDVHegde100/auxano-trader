@@ -23,7 +23,7 @@
   "crons": [
     {
       "path": "/api/cron/autopilot",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 14 * * *"
     }
   ],
   "github": {

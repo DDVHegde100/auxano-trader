@@ -21,7 +21,7 @@ These items are **done in code** — no further programming required for v1:
 | Legal footer on sign-in / sign-up | `LegalFooter.tsx` |
 | Paper trading disclaimers | `PaperDisclaimerBanner` on Trade/Bots |
 | Onboarding → deploy first bot (autopilot) | `apps/mobile/app/onboarding.tsx` |
-| Server autopilot (runs when app closed) | Vercel cron `/api/cron/autopilot` every 10 min |
+| Server autopilot (runs when app closed) | Vercel cron `/api/cron/autopilot` daily (Hobby plan; upgrade for more frequent runs) |
 | EAS bundle ID + ASC app ID | `app.config.ts`, `eas.json` |
 | Clerk publishable key in EAS builds | `eas.json` production/preview env |
 | App Store screenshots 1290×2796 | `apps/mobile/app-store-screenshots/6.7-inch/` |
@@ -306,7 +306,7 @@ Vercel API (auxano-red.vercel.app)
     ↓ Prisma
 Supabase Postgres
     ↑
-Autopilot cron every 10 min (trades while app is closed)
+Autopilot cron daily at 14:00 UTC (Hobby plan limit; upgrade Vercel for more frequent runs)
 ```
 
 ---

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Capture 6.7" App Store screenshots (1290×2796) via headless browser.
+ * Capture App Store screenshots via headless browser.
  * Uses local web app + dev login when ALLOW_DEV_AUTH=true.
  *
  * Usage:
- *   node scripts/capture-app-store-screenshots.mjs [base-url]
+ *   node scripts/capture-app-store-screenshots.mjs [base-url] [--6.5|--6.7]
  *
  * Requires: npx playwright install chromium (first run)
  */
@@ -14,12 +14,32 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
-const outDir = path.join(root, "apps/mobile/app-store-screenshots/6.7-inch");
-const base = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
+const args = process.argv.slice(2);
+const sizeFlag = args.find((a) => a === "--6.5" || a === "--6.7") ?? "--6.7";
+const base = (args.find((a) => !a.startsWith("--")) ?? "http://127.0.0.1:3000").replace(
+  /\/$/,
+  ""
+);
 
-/** iPhone 16 Pro Max logical size × 3 = 1290×2796 */
-const VIEWPORT = { width: 430, height: 932 };
-const DEVICE_SCALE = 3;
+const PRESETS = {
+  "--6.7": {
+    label: '6.7"',
+    folder: "6.7-inch",
+    pixels: "1290×2796",
+    viewport: { width: 430, height: 932 },
+    deviceScaleFactor: 3,
+  },
+  "--6.5": {
+    label: '6.5"',
+    folder: "6.5-inch",
+    pixels: "1284×2778",
+    viewport: { width: 428, height: 926 },
+    deviceScaleFactor: 3,
+  },
+};
+
+const preset = PRESETS[sizeFlag] ?? PRESETS["--6.7"];
+const outDir = path.join(root, "apps/mobile/app-store-screenshots", preset.folder);
 
 const shots = [
   { name: "01-sign-in", path: "/sign-in", auth: false },
@@ -46,19 +66,6 @@ async function devLogin(page) {
   await page.waitForURL(/dashboard/, { timeout: 30000 });
 }
 
-async function capture(page, { name, path: route, auth }) {
-  if (auth) {
-    await page.goto(`${base}${route}`, { waitUntil: "networkidle" });
-  } else {
-    await page.goto(`${base}${route}`, { waitUntil: "networkidle" });
-  }
-  await page.waitForTimeout(1200);
-  const file = path.join(outDir, `${name}.png`);
-  await page.screenshot({ path: file, fullPage: false });
-  console.log(`✓ ${name}.png`);
-  return file;
-}
-
 async function main() {
   await mkdir(outDir, { recursive: true });
 
@@ -71,8 +78,8 @@ async function main() {
   const browser = await chromium.launch();
   const context = await browser.newContext({
     ...devices["iPhone 14 Pro Max"],
-    viewport: VIEWPORT,
-    deviceScaleFactor: DEVICE_SCALE,
+    viewport: preset.viewport,
+    deviceScaleFactor: preset.deviceScaleFactor,
     colorScheme: "dark",
   });
   const page = await context.newPage();
@@ -88,17 +95,15 @@ async function main() {
     for (const shot of shots.filter((s) => s.auth)) {
       await page.goto(`${base}${shot.path}`, { waitUntil: "networkidle" });
       await page.waitForTimeout(1500);
-      await page.screenshot({
-        path: path.join(outDir, `${shot.name}.png`),
-      });
+      await page.screenshot({ path: path.join(outDir, `${shot.name}.png`) });
       console.log(`✓ ${shot.name}.png`);
     }
 
-    const readme = `# App Store screenshots (6.7" — 1290×2796)
+    const readme = `# App Store screenshots (${preset.label} — ${preset.pixels})
 
 Generated from ${base} on ${new Date().toISOString().split("T")[0]}.
 
-Upload to App Store Connect → Auxano → iOS App → Screenshots → 6.7" Display.
+Upload to App Store Connect → Auxano → iOS App → Screenshots → ${preset.label} Display.
 
 | File | Screen |
 |------|--------|

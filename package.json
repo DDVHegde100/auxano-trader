@@ -14,6 +14,8 @@
     "test:db": "node scripts/test-db.mjs",
     "test:auth": "node scripts/test-auth-local.mjs",
     "screenshots": "node scripts/capture-app-store-screenshots.mjs",
+    "screenshots:6.5": "node scripts/capture-app-store-screenshots.mjs http://127.0.0.1:3000 --6.5",
+    "screenshots:6.7": "node scripts/capture-app-store-screenshots.mjs http://127.0.0.1:3000 --6.7",
     "verify:production-ready": "node scripts/verify-production-ready.mjs",
     "fix:web": "rm -rf apps/web/.next",
     "dev": "npm run dev --workspace=@auxano/web",
