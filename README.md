@@ -77,3 +77,9 @@ Every user receives **$100,000** virtual cash on signup. No real-money trading i
 ## License
 
 Proprietary — Auxano © 2026
+
+---
+
+**Author:** [Dhruv Hegde](https://github.com/thedhruvhegde) · CS @ University of Michigan
+
+**License:** [MIT](LICENSE)
